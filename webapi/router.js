@@ -64,7 +64,7 @@ var options = {
 https.createServer(options,function (req, res) {
   //  For PUT/POST methods, wait until the
   //  complete request body has been read.
-  //POST OG PUT OG DELETE ER FORELØPG IKKE STØTTA :)
+  //POST OG PUT ER FORELØPG IKKE STØTTA :)
   if (req.method==="POST" || req.method==="PUT") {
     var body = "";
     req.on("data", function(data){
