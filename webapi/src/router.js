@@ -8,7 +8,8 @@ var services = {
     userteam: require("./user_team"),
     league: require("./league"),
     team:  require("./team"),
-    player: require("./player")
+    player: require("./player"),
+    userinformation: require("./user_information")
 };
 
 function sendResults(callback, res, status, statusText, headers, result) {
