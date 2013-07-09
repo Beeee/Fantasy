@@ -18,6 +18,7 @@ var deleteUser = function(params,callback) {
     return callback(200, "OK", {}, {});
 };
 
+
 exports.dispatch = {
   GET:    login,
   PUT:    changePassword,
