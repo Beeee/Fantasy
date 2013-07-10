@@ -1,9 +1,9 @@
-// A MySQL connection for all services
-
-exports.conn = require('mysql').createConnection({
-  user:     "fkereki_user",
-  password: "fkereki_pass",
-  database: "world"
+var mysql      = require('mysql');
+exports.connection = mysql.createConnection({
+    host: '192.168.10.105',
+    user: 'roar',
+    password: '123',
+    database: 'mydb'
 });
 
 exports.authenticate = function (params) {

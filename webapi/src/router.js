@@ -27,7 +27,6 @@ function sendResults(callback, res, status, statusText, headers, result) {
 	}
 };
 
-
 function routeCall(req, res, body) {
  if(typeof body === "undefined") {body = ""; }
   // Get parameters, both from the URL and the request body
