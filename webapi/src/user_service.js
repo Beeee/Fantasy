@@ -6,7 +6,8 @@ var login = function(params,callback) {
     {
         return callback(401, "Unauthorized", {}, {});
     }
-    var sql = "SELECT * FROM User WHERE userName="+aux.connection.escape(auth["username"])+" AND password="+aux.connection.escape(auth["password"]);
+    var sql = "SELECT * FROM User WHERE username="+aux.connection.escape(auth["username"])
+        +" AND password="+aux.connection.escape(auth["password"]);
     aux.connection.query(sql, function(err, rows) {
         if(err)
         {
@@ -14,34 +15,84 @@ var login = function(params,callback) {
         }
         if(rows === undefined)
         {
-            return callback(401, "Unauthorized", {}, {});
+            return callback(401, "Unauthorized");
         }
-        if(rows.length == 1) {
-            return callback(202, "Accepted", {}, {});
+        else if(rows.length == 1) {
+            return callback(202, "Accepted");
         }
         else
         {
-            return callback(401, "Unauthorized", {}, {});
+            return callback(401, "Unauthorized");
         }
     });
 };
 
 var changePassword = function(params,callback) {
-    return callback(200, "OK", {}, {});
+    var auth = aux.authenticate(params);
+    if(aux.loginWithUserPw(auth["username"],auth["password"])) {
+        var sql = "UPDATE User SET password="+aux.connection.escape(params[password])
+            +" WHERE username="+aux.connection.escape(auth["username"]) +
+            "AND password="+aux.connection.escape(auth["password"]);
+        aux.connection.query(sql, function(err, result) {
+            if(err)
+            {
+                return aux.onError(err, callback);
+            }
+            if (result.affectedRows)
+            {
+                return callback(204, "UPDATED");
+            }
+            else
+            {
+                return callback(409, "COULDN'T UPDATE PASSWORD");
+            }
+        });
+    }
+    else {
+        return callback(401, "Unauthorized");
+    }
 };
 
 var addNewUser = function(params,callback) {
-    return callback(200, "OK", {}, {});
+    if(params["name"] === undefined ||
+       params["username"] === undefined ||
+       params["password"]=== undefined ||
+       params["mail"] === undefined)
+    {
+        return callback(400, "Bad Request");
+    }
+    var sql = "INSERT INTO User SET ?";
+    var data = {
+        "name": params["name"],
+        "username": params["username"],
+        "password": params["password"],
+        "mail":params["mail"]
+    }
+    aux.connection.query(sql, data, function(err) {
+       if(err) {
+           if(err["code"] === 'ER_DUP_ENTRY') {
+              return callback(403, "USERNAME ALREADY EXISTS");
+           }
+           else {
+               return aux.onError(err, callback);
+           }
+           console.log(err);
+       }
+       else
+       {
+           return callback(202, "Accepted");
+       }
+    });
 };
 
 var deleteUser = function(params,callback) {
-    return callback(200, "OK", {}, {});
+    var allowHeader = {Allow: "GET, PUT, POST"}
+    return callback(405, "Method Not Allowed",allowHeader);
 };
-
 
 exports.dispatch = {
   GET:    login,
   PUT:    changePassword,
   POST:   addNewUser,
-  DELETE:   deleteUser
+  DELETE: deleteUser
 };

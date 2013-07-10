@@ -2,6 +2,8 @@ var url = require('url');
 //var https = require('https');
 var http = require('http');
 var fs = require('fs');
+var logger = require('./log');
+
 
 var services = {
     user:  require("./user_service"),
@@ -27,37 +29,62 @@ function sendResults(callback, res, status, statusText, headers, result) {
 	}
 };
 
+function getbodyParams(body) {
+    var bodyParams = [];
+    try {
+        bodyParams =  JSON.parse(body);
+    }
+    catch (e) {
+        bodyParams = []
+        console.log(e);
+        console.log("syntax:"+body);
+    }
+    return bodyParams;
+};
+
 function routeCall(req, res, body) {
- if(typeof body === "undefined") {body = ""; }
   // Get parameters, both from the URL and the request body
   var urlObj = url.parse(req.url, true);
   var params = urlObj.query;
+  if(typeof body !== "undefined")
+  {
+    var bodyParams = getbodyParams(body);
+        for (var p in bodyParams) {
+            params[p] = bodyParams[p];
+        }
+
+  }
   params["path"] = urlObj.pathname.split("/");
   
-  if(req.headers['authorization'] !== undefined) {
+  if(req.headers['authorization'] !== undefined)
+  {
 	params['authorization'] = req.headers['authorization'];
   }  
   var toCall = urlObj.pathname.split("/")[1];
   
-  if (typeof services[toCall] === "undefined") {
+  if (typeof services[toCall] === "undefined")
+  {
 	console.log(toCall+ " is undefined");
     return sendResults(params["callback"],res, 404, "SERVICE NOT FOUND");
   }
   
-  if (typeof services[toCall]["dispatch"][req.method] === "undefined") {
-		console.log("Undefined service for "+toCall);
+  if (typeof services[toCall]["dispatch"][req.method] === "undefined")
+  {
+    console.log("Undefined service for "+toCall);
     return sendResults(params["callback"],res, 404, "SERVICE NOT FOUND");
-	}
-  
+  }
+
   services[toCall]["dispatch"][req.method](params, function(status, statusText, headers, result){
       return sendResults(params["callback"], res, status, statusText, headers, result);
     });
 }
+
 // Unexpected error catching
 process.on('uncaughtException', function(err) {
   console.error("UNCAUGHT EXCEPTION...");
   console.error(err);
   console.error(err.stack);
+  logger.info(err);
 });
 
 /*
@@ -69,9 +96,6 @@ var options = {
 
 //https.createServer(options,function (req, res) {
 http.createServer(function (req, res) {
-  //  For PUT/POST methods, wait until the
-  //  complete request body has been read.
-  //POST OG PUT ER FOREL�PG IKKE ST�TTA :)
   if (req.method==="POST" || req.method==="PUT") {
     var body = "";
     req.on("data", function(data){
