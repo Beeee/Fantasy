@@ -6,7 +6,16 @@ var login = function(params,callback) {
     {
         return callback(401, "Unauthorized", {}, {});
     }
-    aux.connection.query("SELECT * FROM User WHERE userName='"+auth["username"]+"' AND password="+auth["password"], function(err, rows) {
+    var sql = "SELECT * FROM User WHERE userName="+aux.connection.escape(auth["username"])+" AND password="+aux.connection.escape(auth["password"]);
+    aux.connection.query(sql, function(err, rows) {
+        if(err)
+        {
+            return aux.onError(err, callback);
+        }
+        if(rows === undefined)
+        {
+            return callback(401, "Unauthorized", {}, {});
+        }
         if(rows.length == 1) {
             return callback(202, "Accepted", {}, {});
         }

@@ -1,20 +1,22 @@
 // A MySQL connection for all services
 var mysql      = require('mysql');
-/*
+
 exports.connection = mysql.createConnection({
     host: '192.168.10.105',
     user: 'roar',
     password: '123',
     database: 'mydb'
 });
-*/
 
+
+/*
 exports.connection = mysql.createConnection({
     host: 'localhost',
-    user: 'local',
-    password: '125324532563',
+    user: 'node',
+    password: '123',
     database: 'mydb'
 });
+*/
 
 
 exports.authenticate = function (params) {
