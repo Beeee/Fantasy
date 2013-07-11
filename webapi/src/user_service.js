@@ -30,10 +30,12 @@ var login = function(params,callback) {
 var changePassword = function(params,callback) {
     var auth = aux.authenticate(params);
     if(aux.loginWithUserPw(auth["username"],auth["password"])) {
-        var sql = "UPDATE User SET password="+aux.connection.escape(params[password])
+        console.log("1");
+        var sql = "UPDATE User SET password="+aux.connection.escape(params["password"])
             +" WHERE username="+aux.connection.escape(auth["username"]) +
             "AND password="+aux.connection.escape(auth["password"]);
         aux.connection.query(sql, function(err, result) {
+            console.log("2");
             if(err)
             {
                 return aux.onError(err, callback);
@@ -87,7 +89,7 @@ var addNewUser = function(params,callback) {
 
 var deleteUser = function(params,callback) {
     var allowHeader = {Allow: "GET, PUT, POST"}
-    return callback(405, "Method Not Allowed",allowHeader);
+    return callback(405, "Method Not Allowed", allowHeader);
 };
 
 exports.dispatch = {

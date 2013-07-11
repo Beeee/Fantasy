@@ -2,7 +2,7 @@ var url = require('url');
 //var https = require('https');
 var http = require('http');
 var fs = require('fs');
-var logger = require('./log');
+//var logger = require('./log');
 
 
 var services = {
@@ -55,10 +55,10 @@ function routeCall(req, res, body) {
 
   }
   params["path"] = urlObj.pathname.split("/");
-  
-  if(req.headers['authorization'] !== undefined)
+
+  if(req.headers["authorization"] !== undefined)
   {
-	params['authorization'] = req.headers['authorization'];
+	params["authorization"] = req.headers["authorization"];
   }  
   var toCall = urlObj.pathname.split("/")[1];
   
@@ -84,7 +84,7 @@ process.on('uncaughtException', function(err) {
   console.error("UNCAUGHT EXCEPTION...");
   console.error(err);
   console.error(err.stack);
-  logger.info(err);
+ // logger.info(err);
 });
 
 /*

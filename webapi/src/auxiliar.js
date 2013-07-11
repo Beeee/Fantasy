@@ -40,12 +40,18 @@ exports.loginFromParams = function (params) {
 };
 
 exports.loginWithUserPw = function (username,password) {
-    var sql = "SELECT * FROM User WHERE username="+aux.connection.escape(username)+" AND password="+aux.connection.escape(password);
-    this.connection.query(sql, function(err, rows) {
-        if(err){ return false; }
-        if(rows === undefined) { return false; }
-        else if(rows.length == 1) {return true;}
-        else { return false;}
+    var sql = "SELECT * FROM User WHERE username="+this.connection.escape(username)+" AND password="+this.connection.escape(password);
+    return this.connection.query(sql, function(err, rows) {
+        if(err){
+            console.log(err);
+            return false; }
+        if(rows === undefined) {
+            return false; }
+        else if(rows.length == 1) {
+            return true;
+        }
+        else {
+            return false;}
     });
 };
 // Error reporting
