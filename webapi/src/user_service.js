@@ -29,12 +29,11 @@ var login = function(params,callback) {
 
 var changePassword = function(params,callback) {
     var auth = aux.authenticate(params);
-    if(aux.loginWithUserPw(auth["username"],auth["password"])) {
+    aux.loginWithUserPw(auth["username"],auth["password"], function(){
         var sql = "UPDATE User SET password="+aux.connection.escape(params["password"])
             +" WHERE username="+aux.connection.escape(auth["username"]) +
             "AND password="+aux.connection.escape(auth["password"]);
         aux.connection.query(sql, function(err, result) {
-            console.log("2");
             if(err)
             {
                 return aux.onError(err, callback);
@@ -48,10 +47,9 @@ var changePassword = function(params,callback) {
                 return callback(409, "COULDN'T UPDATE PASSWORD");
             }
         });
-    }
-    else {
-        return callback(401, "Unauthorized");
-    }
+    },
+    aux.unauthorized(callback)
+    );
 };
 
 var addNewUser = function(params,callback) {

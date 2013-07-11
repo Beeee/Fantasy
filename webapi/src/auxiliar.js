@@ -34,26 +34,36 @@ exports.authenticate = function (params) {
     return result;
 }
 
+/*
 exports.loginFromParams = function (params) {
     var auth = this.authenticate(params);
     return this.loginWithUserPw(auth["username"],auth["password"]);
-};
+};*/
 
-exports.loginWithUserPw = function (username,password) {
+exports.loginWithUserPw = function (username,password, allowCallback, deniedCallback) {
     var sql = "SELECT * FROM User WHERE username="+this.connection.escape(username)+" AND password="+this.connection.escape(password);
-    return this.connection.query(sql, function(err, rows) {
+    this.connection.query(sql, function(err, rows) {
         if(err){
-            console.log(err);
-            return false; }
+           deniedCallback();
+        }
         if(rows === undefined) {
-            return false; }
+            deniedCallback();
+        }
         else if(rows.length == 1) {
-            return true;
+            allowCallback();
         }
         else {
-            return false;}
+            deniedCallback();
+        }
     });
 };
+
+exports.unauthorized = function(callback)
+{
+    console.log("inn her?");
+    return callback(401, "Unauthorized");
+}
+
 // Error reporting
 
 exports.onError = function(err, callback) {
