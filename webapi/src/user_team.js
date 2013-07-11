@@ -11,7 +11,7 @@ var getTeam = function(params,callback) {
     return aux.connection.query(sql, function(err, rows) {
         if(err) { return aux.onError(err, callback);  }
         else{
-               var result = generateTeamResult(rows);
+            var result = generateTeamResult(rows);
             return callback(200, "OK", {}, result);
             }
         });
@@ -53,12 +53,86 @@ var substitutePlayer = function(params,callback) {
     return callback(200, "OK");
 };
 
+function alreadyHasTeam(username)
+{
+    var sql = "Select userTeamID FROM User WHERE username="+aux.connection.escape(username);
+    return aux.connection.query(sql, function(err, rows) {
+        if(err || rows.length != 0)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    });
+};
+
 var createTeam = function(params,callback) {
-    return callback(200, "OK");
+    var auth = aux.authenticate(params);
+    if(aux.loginWithUserPw(auth["username"],auth["password"])) {
+       if(!alreadyHasTeam)
+       {
+           var userTEAMSQL = "INSERT INTO UserTeam SET ?";
+           var data = {
+               name: params["name"]
+           }
+           var userUserTeamIDSQL = "SELECT userTeamID FROM UserTeam WHERE name="+aux.connection.escape(params["name"]);
+           return aux.connection.query(userTEAMSQL, data, function(err) {
+               if(err)
+               {
+                   if(err["code"] === 'ER_DUP_ENTRY') {
+                       return callback(403, "TEAMNAME ALREADY EXISTS");
+                   }
+                   else {
+                       return aux.onError(err, callback);
+                   }
+               }
+               else
+               {
+                   return aux.connection.query(userUserTeamIDSQL, function(err, rows)
+                   {
+                       if(err)
+                       {
+                           return aux.onError(err, callback);
+                       }
+                       if(rows === undefined || rows.length != 1)
+                       {
+                           return callback(500, "UNEXPECTED INTERNAL ERROR");
+                       }
+                       else
+                       {
+                           var connectUserAndTeamSQL  = "UPDATE User SET userTeamID="+aux.connection.escape(rows[0]["userTeamID"])
+                               +" WHERE username="+aux.connection.escape(auth["username"]) +
+                               " AND password="+aux.connection.escape(auth["password"]);
+                           return aux.connection.query(connectUserAndTeamSQL, function(err) {
+                               if(err)
+                               {
+                                   return aux.onError(err, callback);
+                               }
+                               else{
+                                   return callback(202, "ACCEPTED");
+                               }
+                           });
+                       }
+
+                   });
+               }
+           });
+       }
+       else
+       {
+           return callback(403, "TEAM ALREADY EXISTS");
+       }
+     }
+    else
+    {
+        return callback(401, "Unauthorized");
+    }
 };
 
 var deleteTeam = function(params,callback) {
-    var allowHeader = {Allow: "GET, PUT, POST"}
+    var allowHeader = {Allow: "GET, PUT, POST"};
     return callback(405, "Method Not Allowed",allowHeader);
 };
 
