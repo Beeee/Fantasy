@@ -27,28 +27,34 @@ var login = function(params,callback) {
     });
 };
 
+function sqlChangePassword(auth,params,callback) {
+    var sql = "UPDATE User SET password="+aux.connection.escape(params["password"])
+        +" WHERE username="+aux.connection.escape(auth["username"]) +
+        "AND password="+aux.connection.escape(auth["password"]);
+    return aux.connection.query(sql, function(err, result) {
+        if(err)
+        {
+            return aux.onError(err, callback);
+        }
+        if (result.affectedRows)
+        {
+            return callback(204, "UPDATED");
+        }
+        else
+        {
+            return callback(409, "COULDN'T UPDATE PASSWORD");
+        }
+    });
+};
+
 var changePassword = function(params,callback) {
     var auth = aux.authenticate(params);
     aux.loginWithUserPw(auth["username"],auth["password"], function(){
-        var sql = "UPDATE User SET password="+aux.connection.escape(params["password"])
-            +" WHERE username="+aux.connection.escape(auth["username"]) +
-            "AND password="+aux.connection.escape(auth["password"]);
-        aux.connection.query(sql, function(err, result) {
-            if(err)
-            {
-                return aux.onError(err, callback);
-            }
-            if (result.affectedRows)
-            {
-                return callback(204, "UPDATED");
-            }
-            else
-            {
-                return callback(409, "COULDN'T UPDATE PASSWORD");
-            }
-        });
+        return sqlChangePassword(auth,params,callback);
     },
-    aux.unauthorized(callback)
+        function(){
+           return aux.unauthorized(callback);
+        }
     );
 };
 
@@ -75,7 +81,6 @@ var addNewUser = function(params,callback) {
            else {
                return aux.onError(err, callback);
            }
-           console.log(err);
        }
        else
        {

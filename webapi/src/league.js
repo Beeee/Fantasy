@@ -9,18 +9,30 @@ var addTeam = function(params,callback) {
 };
 
 var createLeague = function(params,callback) {
-    if(aux.loginWithUserPw(params)){
-        if(params["name"] === undefined) { return callback(400, "Bad Request"); }
+    var auth = aux.authenticate(params);
+    aux.loginWithUserPw(auth["username"],auth["password"], function() {
+        if(params["name"] === undefined)
+        {
+            return callback(400, "Bad Request");
+        }
         var sql = "INSERT INTO UserLeague SET ?";
         var data = {
-            "name": params["name"]
+            "name": params["name"],
+            "admin": auth["username"]
         }
         aux.connection.query(sql, data, function(err) {
-            if(err) { return aux.onError(err, callback);  }
-            else { return callback(202, "Accepted"); }
+            if(err) {  aux.onError(err, callback);  }
+            else {
+
+ //               var updateUserTeamSQL = "UPDATE UserTeam, User SET leagueID"=1 WHERE UserTeam.userTeamID=User.userTeamID AND User.username="ingulf2"
+                callback(202, "Accepted");
+
+            }
         });
-    }
-    else { return callback(401, "Unauthorized");  }
+    },
+        function() {
+        return aux.unauthorized(callback);
+    });
 };
 
 var removeTeam = function(params,callback) {

@@ -34,15 +34,15 @@ exports.authenticate = function (params) {
     return result;
 }
 
-/*
-exports.loginFromParams = function (params) {
+
+exports.loginFromParams = function (params, allowCallback, deniedCallback) {
     var auth = this.authenticate(params);
-    return this.loginWithUserPw(auth["username"],auth["password"]);
-};*/
+    return this.loginWithUserPw(auth["username"],auth["password"], allowCallback, deniedCallback);
+};
 
 exports.loginWithUserPw = function (username,password, allowCallback, deniedCallback) {
     var sql = "SELECT * FROM User WHERE username="+this.connection.escape(username)+" AND password="+this.connection.escape(password);
-    this.connection.query(sql, function(err, rows) {
+    return this.connection.query(sql, function(err, rows) {
         if(err){
            deniedCallback();
         }
@@ -52,7 +52,7 @@ exports.loginWithUserPw = function (username,password, allowCallback, deniedCall
         else if(rows.length == 1) {
             allowCallback();
         }
-        else {
+        else{
             deniedCallback();
         }
     });
@@ -60,7 +60,6 @@ exports.loginWithUserPw = function (username,password, allowCallback, deniedCall
 
 exports.unauthorized = function(callback)
 {
-    console.log("inn her?");
     return callback(401, "Unauthorized");
 }
 
