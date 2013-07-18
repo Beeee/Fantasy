@@ -1,4 +1,5 @@
 var aux = require("./auxiliar");
+var teamHelpers = require("./team_helpers");
 
 var getLeagueInformation = function(params,callback) {
     return callback(200, "NOT IMPLEMENTED");
@@ -116,8 +117,6 @@ function validateUser(username,name,callback) {
             createNewLeagueSQL(username, name, callback);
         }
     });
-
-   //Må sjekke om: Laget hans allerde er med i en liga
 };
 
 function createNewLeagueSQL(username, name, callback) {
@@ -159,30 +158,12 @@ function getUserLeagueID(username,callback) {
         }
         else
         {
-            getUserTeamID(username,callback, function(userTeamID) {
+            teamHelpers.getUserTeamIDFromUsername(username,callback, function(userTeamID) {
                 bindTeamAndLeagueSQL(rows[0]["leagueID"],userTeamID,callback);
             });
         }
     });
 };
-
-function getUserTeamID(username,callback, acceptCallback) {
-     var sql = "SELECT userTeamID FROM User WHERE username="+aux.connection.escape(username);
-    aux.connection.query(sql, function(err, rows) {
-        if(err)
-        {
-            aux.onError(err, callback);
-        }
-        else if(rows === undefined || rows.length != 1)
-        {
-            callback(500, "UNEXPECTED INTERNAL ERROR");
-        }
-        else
-        {
-            acceptCallback(rows[0]["userTeamID"]);
-        }
-    });
-}
 
 function bindTeamAndLeagueSQL(leagueID,userTeamID,callback) {
     var sql = "UPDATE UserTeam SET leagueID="+aux.connection.escape(leagueID)+" WHERE userTeamID="+aux.connection.escape(userTeamID);
