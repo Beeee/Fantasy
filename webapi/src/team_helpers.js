@@ -1,9 +1,10 @@
-var aux = require("auxiliar");
+var aux = require("./auxiliar");
 
-exports.isValid = function(userTeamID, gameweekNumber,playerID, callback, acceptCallback) {
+exports.getTeam = function(userTeamID, gameweekNumber,callback, acceptCallback) {
     var sql = "SELECT * FROM teamsView " +
         "WHERE userTeamID="+aux.connection.escape(userTeamID)+
-        "AND gameweekNumber="+aux.connection.escape(gameweekNumber);
+        " AND gameweekNumber="+aux.connection.escape(gameweekNumber);
+    console.log(sql);
     aux.connection.query(sql, function(err, rows) {
         if(err)
         {
@@ -11,22 +12,12 @@ exports.isValid = function(userTeamID, gameweekNumber,playerID, callback, accept
         }
         else
         {
-            var count = countTeamPosition(rows);
-            getPlayerPosition(playerID,callback, function(position){
-                if(positionIsNotFull(position,count)){
-                    acceptCallback();
-                }
-                else
-                {
-                    callback(403, "POSITION FULL");
-                }
-            });
-            //
+            acceptCallback(rows);
         }
     });
 };
 
-function countTeamPosition (rows) {
+exports.countTeamPosition = function(team) {
     var result =
     {
         "keepers" : 0,
@@ -34,24 +25,46 @@ function countTeamPosition (rows) {
         "midfielders" : 0,
         "forwards" : 0
     }
-    for (var i in rows) {
-        if(rows[i]["position"] == "keeper") {
-            result["keepers"]++;
-        }
-        else if(rows[i]["position"] == "defender") {
-            result["defenders"]++;
-        }
-        else if(rows[i]["position"] == "midfielder") {
-            result["midfielders"]++;
-        }
-        else {
-            result["forwards"]++;
-        }
+    for (var i in team) {
+        addToPosition(team[i]["position"],result);
     }
     return result;
 };
 
-function getPlayerPosition(playerID, callback, acceptCallback) {
+function addToPosition(position, result) {
+    if(position == "keeper") {
+        result["keepers"]++;
+    }
+    else if(position == "defender") {
+        result["defenders"]++;
+    }
+    else if(position == "midfielder") {
+        result["midfielders"]++;
+    }
+    else {
+        result["forwards"]++;
+    }
+};
+
+exports.countPlayingTeam = function(team) {
+   var result =
+   {
+       "keepers" : 0,
+       "defenders" : 0,
+       "midfielders" : 0,
+       "forwards" : 0
+   }
+   for (var i in team) {
+        if(team[i]["substitute"] == 0) {
+            addToPosition(team[i]["position"],result);
+        }
+   }
+    return result;
+};
+
+
+
+exports.getPlayerPosition = function(playerID, callback, acceptCallback) {
     var sql = "SELECT position FROM Player WHERE playerID"+aux.connection.escape(playerID);
     aux.connection.query(sql, function(err, rows) {
         if(err)
@@ -65,21 +78,42 @@ function getPlayerPosition(playerID, callback, acceptCallback) {
     });
 };
 
-function positionIsNotFull(position,count) {
+exports.positionIsNotFull = function(position,count) {
+    positionCheck(position, count, 2,6,5,3);
+};
+
+exports.isValidPlayingTeam = function(count) {
+    if(positionCheck("keeper",count, 1,4,3,1) &&
+        positionCheck("defender",count, 1,4,3,1) &&
+        positionCheck("midfielder",count, 1,4,3,1) &&
+        positionCheck("forward",count, 1,4,3,1) &&
+        getNumberOfPlayers == 11) {
+        return true;
+    }
+    else {
+        return false;
+    }
+};
+
+function getNumberOfPlayers(count) {
+    return  count["keepers"] + count["defenders"]+count["midfielders"] + count["Forwards"];
+}
+
+function positionCheck(position,count, keeperLimit, defenderLimit, midfieldLimit, ForwardLimit){
     if(position == "keeper") {
-        if(count[position] < 2) {return true;}
+        if(count[position] < keeperLimit) {return true;}
         else{return false;}
     }
     else if(position == "defender") {
-        if(count[position] < 6) {return true;}
+        if(count[position] < defenderLimit) {return true;}
         else{return false;}
     }
     else if(position == "midfielder") {
-        if(count[position] < 5) {return true;}
+        if(count[position] < midfieldLimit) {return true;}
         else{return false;}
     }
     else {
-        if(count[position] < 3) {return true;}
+        if(count[position] < ForwardLimit) {return true;}
         else{return false;}
     }
 };
@@ -129,3 +163,17 @@ exports.getuserTeamIDAndLeagueID = function(username,callback, acceptCallback) {
         }
     });
 };
+
+exports.getLeagueIDFromUsername = function(username,callback, acceptCallback) {
+    var sql = "SELECT leagueID FROM leagueUserTeam WHERE username="+aux.connection.escape(username);
+    aux.connection.query(sql, function(err, rows) {
+        if(err ||rows === undefined|| rows.length != 1)
+        {
+            aux.onError(err, callback);
+        }
+        else
+        {
+            acceptCallback(rows[0]["leagueID"]);
+        }
+    });
+}

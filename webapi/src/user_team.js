@@ -30,12 +30,22 @@ var deleteTeam = function(params,callback) {
 
 var pickPlayerFromPool = function(params,callback) {
     var auth = aux.authenticate(params);
+    var gameWeekNumber = 1;
     aux.loginWithUserPw(auth["username"],auth["password"],
         function() {
             teamHelpers.getuserTeamIDAndLeagueID(auth["username"], callback, function(userTeamID,leagueID) {
                 checkIfPlayerAlreadyExists(leagueID,params["playerid"],"1",callback, function() {
-                    teamHelpers.isValid(userTeamID,"1",params["playerid"],callback,function(){
-                        insertPlayer(userTeamID,params["playerid"],"1",callback);
+                    teamHelpers.getTeam(userTeamID,"1",callback,function(team){
+                        checkPlayerAvail(team, params["playerid"],callback,function() {
+                            insertPlayer(userTeamID,params["playerid"],"1",callback, function() {
+                                teamHelpers.getTeam(userTeamID,gameWeekNumber,callback, function (newTeam) {
+                                      if(newTeam.length == 16) {
+                                          setUpTeam(newTeam);
+                                      }
+                                    callback(202, "ACCEPTED");
+                                });
+                            });
+                        });
                     });
      //
                 });
@@ -44,6 +54,75 @@ var pickPlayerFromPool = function(params,callback) {
         function() {
             aux.unauthorized(callback);
         });
+};
+
+function checkPlayerAvail(team,playerID, callback, acceptCallback) {
+    var count = teamHelpers.countTeamPosition(team);
+    teamHelpers.getPlayerPosition(playerID,callback, function(position){
+        if(teamHelpers.positionIsNotFull(position,count)){
+            acceptCallback();
+        }
+        else
+        {
+            callback(403, "POSITION FULL");
+        }
+    });
+};
+
+function setUpTeam(team) {
+    var playerIDlist = [];
+    var keeper = false;
+    var defender = false;
+    var defender2 = false
+    var midfielder = false;
+    var forward = false;
+    var userTeamID = team[0]["userTeamID"];
+
+    for(var i in team) {
+        if(team[i]["position"] == "keeper" && keeper == false) {
+            keeper = true;
+            playerIDlist.push(team[i]["playerID"]);
+        }
+        if(team[i]["position"] == "defender" && (defender == false || defender2 == false)) {
+            if(!defender) {
+                defender = true;
+                playerIDlist.push(team[i]["playerID"]);
+            }
+            else if(!defender2)
+            {
+                defender2 = true;
+                playerIDlist.push(team[i]["playerID"]);
+            }
+            else {
+                //do nothing
+            }
+        }
+        if(team[i]["position"] == "midfielder" && midfielder == false) {
+            midfielder = true;
+            playerIDlist.push(team[i]["playerID"]);
+        }
+        if(team[i]["position"] == "forward" && forward == false) {
+            forward = true;
+            playerIDlist.push(team[i]["playerID"]);
+        }
+    }
+
+    var sql = "UPDATE GameweekTeam_has_Player SET substitute=1 " +
+        "WHERE userTeamID=" +aux.connection.escape(userTeamID)+
+        "AND (playerID="+aux.connection.escape(playerIDlist[0]) +
+        " OR playerID="+aux.connection.escape(playerIDlist[1]) +
+        " OR playerID="+aux.connection.escape(playerIDlist[2]) +
+        " OR playerID="+aux.connection.escape(playerIDlist[3]) +
+        " OR playerID="+aux.connection.escape(playerIDlist[4]) +
+        ")";
+
+    aux.connection.query(sql, data, function(err) {
+        if(err)
+        {
+            console.log("Klarte ikke å sette opp subs!! BUG BUG BUG");
+        }
+    });
+
 };
 
 function checkIfPlayerAlreadyExists(leagueID,playerID,gameweekNumber,callback,acceptCallback) {
@@ -63,7 +142,7 @@ function checkIfPlayerAlreadyExists(leagueID,playerID,gameweekNumber,callback,ac
     });
 };
 
-function insertPlayer(userTeamID,playerID,gameweekNumber,callback) {
+function insertPlayer(userTeamID,playerID,gameweekNumber,callback, acceptCallback) {
     var sql = "INSERT INTO GameweekTeam_has_Player SET ?";
     var data =
     {
@@ -79,7 +158,7 @@ function insertPlayer(userTeamID,playerID,gameweekNumber,callback) {
         }
         else
         {
-            callback(202, "ACCEPTED");
+            acceptCallback();
         }
     });
 };

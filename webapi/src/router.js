@@ -8,6 +8,7 @@ var fs = require('fs');
 var services = {
     user:  require("./user_service"),
     userteam: require("./user_team"),
+    transfers: require("./user_team2"),
     league: require("./league"),
     team:  require("./team"),
     player: require("./player"),
