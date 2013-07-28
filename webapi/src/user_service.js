@@ -60,7 +60,7 @@ var changePassword = function(params,callback) {
 
 var addNewUser = function(params,callback) {
     if(params["name"] === undefined ||
-       params["username"] === undefined ||
+       params["username"] === undefined||
        params["password"]=== undefined ||
        params["mail"] === undefined)
     {

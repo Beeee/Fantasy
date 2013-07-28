@@ -1,4 +1,4 @@
-var subs = require("./userteam/substitution")
+var subs = require("./subs/substitution")
 var availablePlayers = require("./userteam/available_players")
 var helpers = require("./team_helpers")
 var makeSubstitution = function(params,callback) {
@@ -9,7 +9,7 @@ var getAvailablePlayers = function(params,callback) {
     availablePlayers.main(params,callback);
 };
 
-var testFunction = function(params,callback) {
+var subWithPool = function(params,callback) {
     helpers.getTeam(1,1,callback, function(team) {
         console.log(team);
     });
@@ -20,6 +20,6 @@ var testFunction = function(params,callback) {
 exports.dispatch = {
    GET:    getAvailablePlayers,
    PUT:    makeSubstitution,
-   POST:   testFunction
+   POST:   subWithPool
 //    DELETE: deleteTeam
 };

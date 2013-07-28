@@ -46,7 +46,7 @@ exports.loginWithUserPw = function (username,password, allowCallback, deniedCall
         if(err){
            deniedCallback();
         }
-        if(rows === undefined) {
+        if(rows ===  undefined) {
             deniedCallback();
         }
         else if(rows.length == 1) {

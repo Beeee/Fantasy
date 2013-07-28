@@ -47,7 +47,7 @@ function validateUserAddTeam(username,callback,acceptedCallback){
 };
 
 function adminCheck(adminUsername,callback, acceptCallback) {
-    var sql =  "SELECT leagueID FROM leagueUserTeam WHERE username="+aux.connection.escape(adminUsername);
+    var sql =  "SELECT leagueID FROM adminsView WHERE username="+aux.connection.escape(adminUsername);
     aux.connection.query(sql, function(err, rows) {
         if(err)
         {
@@ -87,7 +87,6 @@ var createLeague = function(params,callback) {
         }
         else
         {
-            //Må sjekke om brukeren har et lag som allerede hører til en liga
             validateUser(auth["username"], params["name"], callback);
         }
     },
@@ -126,7 +125,7 @@ function createNewLeagueSQL(username, name, callback) {
             handleCreateLeagueSQLError(err,callback);
         }
         else {
-            getUserLeagueID(username,name,callback);
+            getUserLeagueID(username,callback);
          }
     });
 };

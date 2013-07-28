@@ -7,7 +7,7 @@
 var forever = require('forever');
 
 var child = new(forever.Monitor)('router.js', {
-        'silent': true,
+        'silent': false,
         'pidFile': 'pids/router.pid',
         'watch': true,
         'watchDirectory': '.',      // Top-level directory to watch from.

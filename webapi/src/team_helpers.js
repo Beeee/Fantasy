@@ -54,7 +54,8 @@ exports.countPlayingTeam = function(team) {
        "forwards" : 0
    }
    for (var i in team) {
-        if(team[i]["substitute"] == 0) {
+       var substitute =  JSON.stringify(team[i]["substitute"])[1]
+        if(substitute == 0) {
             addToPosition(team[i]["position"],result);
         }
    }
@@ -78,15 +79,24 @@ exports.getPlayerPosition = function(playerID, callback, acceptCallback) {
 };
 
 exports.positionIsNotFull = function(position,count) {
-    return positionCheck(position, count, 2,6,5,3);
+    return positionNotFullCheck(position, count, 2,6,5,3);
 };
 
 exports.isValidPlayingTeam = function(count) {
+    console.log("-----------Is Valid Playing Team ------------");
+    console.log(count);
+    console.log(positionCheck("keeper",count, 1,4,3,1));
+    console.log(positionCheck("defender",count, 1,4,3,1));
+    console.log(positionCheck("midfielder",count, 1,4,3,1));
+    console.log(positionCheck("forward",count, 1,4,3,1));
+    console.log(getNumberOfPlayers(count));
+    console.log("-----------END OF Valid Playing Team ------------");
+
     if(positionCheck("keeper",count, 1,4,3,1) &&
         positionCheck("defender",count, 1,4,3,1) &&
         positionCheck("midfielder",count, 1,4,3,1) &&
         positionCheck("forward",count, 1,4,3,1) &&
-        getNumberOfPlayers == 11) {
+        getNumberOfPlayers(count) == 11) {
         return true;
     }
     else {
@@ -95,31 +105,50 @@ exports.isValidPlayingTeam = function(count) {
 };
 
 function getNumberOfPlayers(count) {
-    return  count["keepers"] + count["defenders"]+count["midfielders"] + count["Forwards"];
+    return  count["keepers"] + count["defenders"]+count["midfielders"] + count["forwards"];
 }
 
 function positionCheck(position,count, keeperLimit, defenderLimit, midfieldLimit, ForwardLimit){
     if(position == "keeper") {
-        if(count["keepers"] < keeperLimit) {return true;}
+        if(count["keepers"] == keeperLimit) {return true;}
         else{return false;}
     }
     else if(position == "defender") {
-        if(count["defenders"] < defenderLimit) {return true;}
+        if(count["defenders"] >= defenderLimit) {return true;}
         else{return false;}
     }
     else if(position == "midfielder") {
-        if(count["midfielders"] < midfieldLimit) {return true;}
+        if(count["midfielders"] >= midfieldLimit) {return true;}
         else{return false;}
     }
     else {
-        if(count["forwards"] < ForwardLimit) {return true;}
+        if(count["forwards"] >= ForwardLimit) {return true;}
+        else{return false;}
+    }
+};
+
+function positionNotFullCheck(position,count, keeperLimit, defenderLimit, midfieldLimit, ForwardLimit){
+    if(position == "keeper") {
+        if(count["keepers"] <= keeperLimit) {return true;}
+        else{return false;}
+    }
+    else if(position == "defender") {
+        if(count["defenders"] <= defenderLimit) {return true;}
+        else{return false;}
+    }
+    else if(position == "midfielder") {
+        if(count["midfielders"] <= midfieldLimit) {return true;}
+        else{return false;}
+    }
+    else {
+        if(count["forwards"] <= ForwardLimit) {return true;}
         else{return false;}
     }
 };
 
 exports.getUserTeamIDFromName = function(name,callback, acceptCallback) {
     var userUserTeamIDSQL = "SELECT userTeamID FROM UserTeam WHERE name="+aux.connection.escape(name);
-    getUserTeamID(sql,callback,acceptCallback);
+    getUserTeamID(userUserTeamIDSQL,callback,acceptCallback);
 };
 
 exports.getUserTeamIDFromUsername = function(username,callback, acceptCallback) {
@@ -152,7 +181,7 @@ exports.getuserTeamIDAndLeagueID = function(username,callback, acceptCallback) {
         "AND leagueID IS NOT NULL";
 
     aux.connection.query(sql, function(err, rows) {
-        if(err ||rows === undefined|| rows.length != 1)
+        if(err ||rows === undefined || rows.length != 1)
         {
             aux.onError(err, callback);
         }
@@ -164,9 +193,9 @@ exports.getuserTeamIDAndLeagueID = function(username,callback, acceptCallback) {
 };
 
 exports.getLeagueIDFromUsername = function(username,callback, acceptCallback) {
-    var sql = "SELECT leagueID FROM leagueUserTeam WHERE username="+aux.connection.escape(username);
+    var sql = "SELECT leagueID FROM teamsLeagueInformation WHERE username="+aux.connection.escape(username);
     aux.connection.query(sql, function(err, rows) {
-        if(err ||rows === undefined|| rows.length != 1)
+        if(err || rows === undefined || rows.length != 1)
         {
             aux.onError(err, callback);
         }

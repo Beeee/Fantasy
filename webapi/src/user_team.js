@@ -39,7 +39,9 @@ var pickPlayerFromPool = function(params,callback) {
                         checkPlayerAvail(team, params["playerid"],callback,function() {
                             insertPlayer(userTeamID,params["playerid"],"1",callback, function() {
                                 teamHelpers.getTeam(userTeamID,gameWeekNumber,callback, function (newTeam) {
-                                      if(newTeam.length == 16) {
+                                    console.log(newTeam.length);
+                                    if(newTeam.length == 16) {
+
                                           setUpTeam(newTeam);
                                       }
                                     callback(202, "ACCEPTED");
@@ -65,7 +67,6 @@ function checkPlayerAvail(team,playerID, callback, acceptCallback) {
         }
         else
         {
-            console.log("failer den her?");
             callback(403, "POSITION FULL");
         }
     });
@@ -111,16 +112,16 @@ function setUpTeam(team) {
 
     var sql = "UPDATE GameweekTeam_has_Player SET substitute=1 " +
         "WHERE userTeamID=" +aux.connection.escape(userTeamID)+
-        "AND (playerID="+aux.connection.escape(playerIDlist[0]) +
+        " AND (playerID="+aux.connection.escape(playerIDlist[0]) +
         " OR playerID="+aux.connection.escape(playerIDlist[1]) +
         " OR playerID="+aux.connection.escape(playerIDlist[2]) +
         " OR playerID="+aux.connection.escape(playerIDlist[3]) +
         " OR playerID="+aux.connection.escape(playerIDlist[4]) +
         ")";
-
-    aux.connection.query(sql, data, function(err) {
+    aux.connection.query(sql, function(err) {
         if(err)
         {
+            console.log(err);
             console.log("Klarte ikke å sette opp subs!! BUG BUG BUG");
         }
     });
@@ -133,7 +134,7 @@ function checkIfPlayerAlreadyExists(leagueID,playerID,gameweekNumber,callback,ac
               " AND leagueID="+aux.connection.escape(leagueID)+
               " AND playerID="+aux.connection.escape(playerID);
     aux.connection.query(sql, function(err, rows) {
-        if(err ||rows === undefined|| rows.length != 0)
+        if(err || rows === undefined || rows.length != 0)
         {
             aux.onError(err, callback);
         }
@@ -151,9 +152,9 @@ function insertPlayer(userTeamID,playerID,gameweekNumber,callback, acceptCallbac
         "userTeamID": userTeamID,
         "gameWeekNumber": gameweekNumber,
         "playerID": playerID,
-        "substitute": "0"
+        "substitute": 0
     }
-    console.log(aux.connection.query(sql, data, function(err) {
+    aux.connection.query(sql, data, function(err) {
         if(err)
         {
             aux.onError(err, callback);
@@ -162,7 +163,7 @@ function insertPlayer(userTeamID,playerID,gameweekNumber,callback, acceptCallbac
         {
             acceptCallback();
         }
-    }))
+    });
 };
 
 function generateTeamResult(rows) {
@@ -195,10 +196,6 @@ function generateTeamResult(rows) {
     }
     return result;
 };
-
-
-
-
 
 exports.dispatch = {
     GET:    getTeam,
