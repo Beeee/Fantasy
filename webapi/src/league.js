@@ -8,7 +8,6 @@ var getLeagueInformation = function(params,callback) {
 var addTeam = function(params,callback) {
     var auth = aux.authenticate(params);
     aux.loginWithUserPw(auth["username"],auth["password"], function() {
-            console.log("Start of addteam")
             if(params["username"] === undefined)
             {
                 callback(400, "Bad Request");
@@ -32,7 +31,6 @@ function validateUserAddTeam(username,callback,acceptedCallback){
     var sql = "SELECT UserTeam.userTeamID " +
         "FROM User, UserTeam " +
         "WHERE User.userTeamID=UserTeam.userTeamID AND leagueID IS NULL AND User.username="+aux.connection.escape(username);
-    console.log(sql);
     aux.connection.query(sql, function(err, rows) {
         if(err)
         {
@@ -50,7 +48,6 @@ function validateUserAddTeam(username,callback,acceptedCallback){
 
 function adminCheck(adminUsername,callback, acceptCallback) {
     var sql =  "SELECT leagueID FROM leagueUserTeam WHERE username="+aux.connection.escape(adminUsername);
-    console.log(sql);
     aux.connection.query(sql, function(err, rows) {
         if(err)
         {
@@ -70,7 +67,6 @@ function insertTeamInLeagueSQL(leagueID,userTeamID,callback) {
     var sql = "UPDATE UserTeam " +
         "SET leagueID="+aux.connection.escape(leagueID)+" " +
         "WHERE userTeamID="+aux.connection.escape(userTeamID);
-    console.log(sql);
     aux.connection.query(sql, function(err, rows) {
         if(err)
         {

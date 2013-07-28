@@ -4,7 +4,6 @@ exports.getTeam = function(userTeamID, gameweekNumber,callback, acceptCallback) 
     var sql = "SELECT * FROM teamsView " +
         "WHERE userTeamID="+aux.connection.escape(userTeamID)+
         " AND gameweekNumber="+aux.connection.escape(gameweekNumber);
-    console.log(sql);
     aux.connection.query(sql, function(err, rows) {
         if(err)
         {
@@ -65,7 +64,7 @@ exports.countPlayingTeam = function(team) {
 
 
 exports.getPlayerPosition = function(playerID, callback, acceptCallback) {
-    var sql = "SELECT position FROM Player WHERE playerID"+aux.connection.escape(playerID);
+    var sql = "SELECT position FROM Player WHERE playerID="+aux.connection.escape(playerID);
     aux.connection.query(sql, function(err, rows) {
         if(err)
         {
@@ -79,7 +78,7 @@ exports.getPlayerPosition = function(playerID, callback, acceptCallback) {
 };
 
 exports.positionIsNotFull = function(position,count) {
-    positionCheck(position, count, 2,6,5,3);
+    return positionCheck(position, count, 2,6,5,3);
 };
 
 exports.isValidPlayingTeam = function(count) {
@@ -101,19 +100,19 @@ function getNumberOfPlayers(count) {
 
 function positionCheck(position,count, keeperLimit, defenderLimit, midfieldLimit, ForwardLimit){
     if(position == "keeper") {
-        if(count[position] < keeperLimit) {return true;}
+        if(count["keepers"] < keeperLimit) {return true;}
         else{return false;}
     }
     else if(position == "defender") {
-        if(count[position] < defenderLimit) {return true;}
+        if(count["defenders"] < defenderLimit) {return true;}
         else{return false;}
     }
     else if(position == "midfielder") {
-        if(count[position] < midfieldLimit) {return true;}
+        if(count["midfielders"] < midfieldLimit) {return true;}
         else{return false;}
     }
     else {
-        if(count[position] < ForwardLimit) {return true;}
+        if(count["forwards"] < ForwardLimit) {return true;}
         else{return false;}
     }
 };

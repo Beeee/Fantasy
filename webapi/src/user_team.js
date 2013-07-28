@@ -57,6 +57,7 @@ var pickPlayerFromPool = function(params,callback) {
 };
 
 function checkPlayerAvail(team,playerID, callback, acceptCallback) {
+
     var count = teamHelpers.countTeamPosition(team);
     teamHelpers.getPlayerPosition(playerID,callback, function(position){
         if(teamHelpers.positionIsNotFull(position,count)){
@@ -64,6 +65,7 @@ function checkPlayerAvail(team,playerID, callback, acceptCallback) {
         }
         else
         {
+            console.log("failer den her?");
             callback(403, "POSITION FULL");
         }
     });
@@ -151,7 +153,7 @@ function insertPlayer(userTeamID,playerID,gameweekNumber,callback, acceptCallbac
         "playerID": playerID,
         "substitute": "0"
     }
-    aux.connection.query(sql, data, function(err) {
+    console.log(aux.connection.query(sql, data, function(err) {
         if(err)
         {
             aux.onError(err, callback);
@@ -160,7 +162,7 @@ function insertPlayer(userTeamID,playerID,gameweekNumber,callback, acceptCallbac
         {
             acceptCallback();
         }
-    });
+    }))
 };
 
 function generateTeamResult(rows) {
