@@ -1,6 +1,8 @@
 var subs = require("./subs/substitution")
 var availablePlayers = require("./userteam/available_players")
 var helpers = require("./team_helpers")
+var transfers = require("./subs/transfers")
+
 var makeSubstitution = function(params,callback) {
     subs.main(params,callback);
 };
@@ -10,16 +12,17 @@ var getAvailablePlayers = function(params,callback) {
 };
 
 var subWithPool = function(params,callback) {
-    helpers.getTeam(1,1,callback, function(team) {
-        console.log(team);
-    });
+    transfers.main(params,callback);
 };
 
-
+var deleteTeam = function(params,callback) {
+    var allowHeader = {"Allow": "GET, PUT, POST"};
+    return callback(405, "Method Not Allowed",allowHeader);
+};
 
 exports.dispatch = {
    GET:    getAvailablePlayers,
    PUT:    makeSubstitution,
-   POST:   subWithPool
-//    DELETE: deleteTeam
+   POST:   subWithPool,
+   DELETE: deleteTeam
 };

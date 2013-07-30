@@ -1,4 +1,5 @@
 var url = require('url');
+var aux = require("./auxiliar");
 //var https = require('https');
 var http = require('http');
 var fs = require('fs');
@@ -111,3 +112,5 @@ http.createServer(function (req, res) {
     return routeCall(req, res);
   }
 }).listen(8888);
+
+aux.connection.connect();

@@ -1,0 +1,1 @@
+exports.GAMEWEEKNUMBER = 1;

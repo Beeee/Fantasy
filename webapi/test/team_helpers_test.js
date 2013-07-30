@@ -15,7 +15,7 @@ exports.getPlayerPosition = {
     'defender': function (test) {
         test.expect(1);
         helpers.getPlayerPosition(4,function(code,text) {
-            test.equal(code,500, "Callback should not be called");
+            test.ok(false, "This method should not be called");
             test.done();
 
         }, function(position) {
@@ -26,7 +26,7 @@ exports.getPlayerPosition = {
     'midfielder': function (test) {
         test.expect(1);
         helpers.getPlayerPosition(8,function(code,text) {
-            test.equal(code,500, "Callback should not be called");
+            test.ok(false, "This method should not be called");
             test.done();
 
         }, function(position) {
@@ -37,7 +37,7 @@ exports.getPlayerPosition = {
     'forward': function (test) {
         test.expect(1);
         helpers.getPlayerPosition(13,function(code,text) {
-            test.equal(code,500, "Callback should not be called");
+            test.ok(false, "This method should not be called");
             test.done();
 
         }, function(position) {
@@ -70,7 +70,7 @@ exports.testCountplayingTeam = {
             "forwards" : 1
         }
         helpers.getTeam(65,1,function(code,text) {
-            test.equals(code,500,"Wrong error code");
+            test.ok(false, "This method should not be called");
             test.done();
         }, function(team) {
             var count = helpers.countPlayingTeam(team);
@@ -150,7 +150,7 @@ exports.testCountplayingTeam = {
 exports.testGetuserTeamIDAndLeagueID = {
     'valid input': function(test) {
       helpers.getuserTeamIDAndLeagueID("ingulf", function(code,text) {
-          test.equal(code,500, "invalid error code");
+          test.ok(false, "This method should not be called");
           test.done();
       }, function(userTeamID,leagueID) {
           test.equal(userTeamID,65, "Wrong UserTeamID");
@@ -172,7 +172,7 @@ exports.testGetuserTeamIDAndLeagueID = {
 exports.TestgetUserTeamIDFromUsername = {
     'valid input': function(test) {
         helpers.getUserTeamIDFromUsername("ingulf", function(code,text) {
-            test.equal(code,500, "invalid error code");
+            test.ok(false, "This method should not be called");
             test.done();
         }, function(userTeamID) {
             test.equal(userTeamID,65, "Wrong UserTeamID");
@@ -193,7 +193,7 @@ exports.TestgetUserTeamIDFromUsername = {
 exports.TestgetLeagueIDFromUsername = {
     'valid input': function(test) {
         helpers.getLeagueIDFromUsername("ingulf", function(code,text) {
-            test.equal(code,500, "invalid error code");
+            test.ok(false, "This method should not be called");
             test.done();
         }, function(leagueID) {
             test.equal(leagueID,8, "Wrong UserTeamID");
@@ -212,9 +212,9 @@ exports.TestgetLeagueIDFromUsername = {
 };
 
 exports.TestgetUserTeamIDFromName = {
-    'valid input': function(test) {         //66
+    'valid input': function(test) {
        helpers.getUserTeamIDFromName("Bolle",function(code,text) {
-          test.equal(code,500, "wrong code");
+          test.ok(false, "This method should not be called");
           test.done();
        }, function(userTeamId){
           test.equal(userTeamId, 66, "Wrong userTeamID");
@@ -232,6 +232,115 @@ exports.TestgetUserTeamIDFromName = {
     }
 };
 
+exports.testCheckIfPlayerIsAvailableInTheLeague = {
+    'check valid ': function(test) {
+    helpers.checkIfPlayerIsAvailableInTheLeague(8,58,1,function(code,text) {
+            test.ok(false, "This method should not be called");
+            test.done();
+        }, function(){
+            test.ok(true)
+            test.done();
+        })
+    },
+    'invalid input - playerID not available': function(test) {
+       helpers.checkIfPlayerIsAvailableInTheLeague(8,34,1,function(code,text){
+           test.equal(code,500, "The error code is wrong!");
+           test.done();
+       }, function(){
+           test.ok(false, "This method should not be called");
+           test.done();
+       });
+    }
+};
 
+exports.testPositionIsNotFull = {
+    'test ': function(test) {
+        var count = generateCount(1,2,3,2);
+        var keeper1 = helpers.positionIsNotFull("keeper", count);
+        var defender1 = helpers.positionIsNotFull("defender", count);
+        var midfielder1 = helpers.positionIsNotFull("midfielder", count);
+        var forward1 = helpers.positionIsNotFull("forward", count);
 
+        count = generateCount(2,6,5,3);
+        var keeper2 = helpers.positionIsNotFull("keeper", count);
+        var defender2 = helpers.positionIsNotFull("defender", count);
+        var midfielder2 = helpers.positionIsNotFull("midfielder", count);
+        var forward2 = helpers.positionIsNotFull("forward", count);
 
+        count = generateCount(3,7,6,4);
+        var keeper3 = helpers.positionIsNotFull("keeper", count);
+        var defender3 = helpers.positionIsNotFull("defender", count);
+        var midfielder3 = helpers.positionIsNotFull("midfielder", count);
+        var forward3 = helpers.positionIsNotFull("forward", count);
+
+        count = generateCount(0,0,0,0);
+        var keeper4 = helpers.positionIsNotFull("keeper", count);
+        var defender4 = helpers.positionIsNotFull("defender", count);
+        var midfielder4 = helpers.positionIsNotFull("midfielder", count);
+        var forward4 = helpers.positionIsNotFull("forward", count);
+
+        test.ok(keeper1, "k1");
+        test.ok(!keeper2, "k2");
+        test.ok(!keeper3, "k3");
+        test.ok(keeper4, "k4");
+
+        test.ok(defender1, "d1");
+        test.ok(!defender2, "d2");
+        test.ok(!defender3, "d3");
+        test.ok(defender4, "d4");
+
+        test.ok(midfielder1, "m1");
+        test.ok(!midfielder2, "m2");
+        test.ok(!midfielder3, "m3");
+        test.ok(midfielder4, "m4");
+
+        test.ok(forward1, "f1");
+        test.ok(!forward2, "f2");
+        test.ok(!forward3, "f3");
+        test.ok(forward4, "f4");
+
+        test.done()
+    }
+};
+
+function generateCount(keeper,defender,midfielder,forward) {
+    var count =
+    {
+        "keepers" : keeper,
+        "defenders" : defender,
+        "midfielders" : midfielder,
+        "forwards" : forward
+    }
+    return count;
+};
+/*
+exports.testcountTeamPosition = {
+    'check valid ': function(test) {
+        test.ok(false, "NOT IMPLEMENTED")
+        test.done()
+    },
+    'invalid input': function(test) {
+        test.ok(false, "NOT IMPLEMENTED")
+        test.done()
+    },
+    'err': function(test) {
+        test.ok(false, "NOT IMPLEMENTED")
+        test.done()
+    }
+};
+
+exports.testgetTeam = {
+    'check valid ': function(test) {
+        test.ok(false, "NOT IMPLEMENTED")
+        test.done();
+    },
+    'invalid input': function(test) {
+        test.ok(false, "NOT IMPLEMENTED")
+        test.done()
+    },
+    'err': function(test) {
+        test.ok(false, "NOT IMPLEMENTED")
+        test.done()
+    }
+};
+  */

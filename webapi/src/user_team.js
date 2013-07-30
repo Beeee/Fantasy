@@ -34,12 +34,11 @@ var pickPlayerFromPool = function(params,callback) {
     aux.loginWithUserPw(auth["username"],auth["password"],
         function() {
             teamHelpers.getuserTeamIDAndLeagueID(auth["username"], callback, function(userTeamID,leagueID) {
-                checkIfPlayerAlreadyExists(leagueID,params["playerid"],"1",callback, function() {
+                teamHelpers.checkIfPlayerIsAvailableInTheLeague(leagueID,params["playerid"],"1",callback, function() {
                     teamHelpers.getTeam(userTeamID,"1",callback,function(team){
                         checkPlayerAvail(team, params["playerid"],callback,function() {
                             insertPlayer(userTeamID,params["playerid"],"1",callback, function() {
                                 teamHelpers.getTeam(userTeamID,gameWeekNumber,callback, function (newTeam) {
-                                    console.log(newTeam.length);
                                     if(newTeam.length == 16) {
 
                                           setUpTeam(newTeam);
@@ -126,23 +125,6 @@ function setUpTeam(team) {
         }
     });
 
-};
-
-function checkIfPlayerAlreadyExists(leagueID,playerID,gameweekNumber,callback,acceptCallback) {
-    var sql = "SELECT * FROM playerInformation " +
-              "WHERE gameWeekNumber="+aux.connection.escape(gameweekNumber)+
-              " AND leagueID="+aux.connection.escape(leagueID)+
-              " AND playerID="+aux.connection.escape(playerID);
-    aux.connection.query(sql, function(err, rows) {
-        if(err || rows === undefined || rows.length != 0)
-        {
-            aux.onError(err, callback);
-        }
-        else
-        {
-            acceptCallback();
-        }
-    });
 };
 
 function insertPlayer(userTeamID,playerID,gameweekNumber,callback, acceptCallback) {

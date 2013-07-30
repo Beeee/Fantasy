@@ -9,7 +9,6 @@ exports.main = function(params, callback) {
     if(subIn == subOut) {
         return callback(403, "INVALID SUBSTITUTION");
     }
-    console.log(params);
     var gameweekNumber = 1;
     aux.loginWithUserPw(auth["username"],auth["password"],function() {
         teamHelpers.getUserTeamIDFromUsername(auth["username"],callback,function(userTeamID) {
@@ -17,12 +16,10 @@ exports.main = function(params, callback) {
                 var count = teamHelpers.countPlayingTeam(team);
                 teamHelpers.getPlayerPosition(subIn,callback, function(inPosition) {
                     teamHelpers.getPlayerPosition(subOut,callback, function(outPosition) {
-                        count[translate(inPosition)]--;
-                        count[translate(outPosition)]++;
+                        count[translate(inPosition)]++;
+                        count[translate(outPosition)]--;
                         if(teamHelpers.isValidPlayingTeam(count)) {
                                 var counter = 0;
-                            console.log("IN "+subIn);
-                            console.log("Out "+subOut);
                             updateSubstituteSQL(userTeamID,gameweekNumber,subIn,0,callback, function() {
                                 counter++;
                                 if(counter == 2) {
@@ -59,7 +56,7 @@ function translate(position) {
     if(position == "midfielder") {
         return "midfielders";
     }
-}
+};
 
 
 function updateSubstituteSQL(userTeamID, gameWeekNumber,playerID,value,callback,acceptCallback) {

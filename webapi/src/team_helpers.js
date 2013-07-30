@@ -62,14 +62,15 @@ exports.countPlayingTeam = function(team) {
     return result;
 };
 
-
-
 exports.getPlayerPosition = function(playerID, callback, acceptCallback) {
     var sql = "SELECT position FROM Player WHERE playerID="+aux.connection.escape(playerID);
     aux.connection.query(sql, function(err, rows) {
         if(err)
         {
             aux.onError(err, callback);
+        }
+        else if(rows.length == 0 || rows === undefined) {
+            callback(500, "The player does not exist")
         }
         else
         {
@@ -79,70 +80,74 @@ exports.getPlayerPosition = function(playerID, callback, acceptCallback) {
 };
 
 exports.positionIsNotFull = function(position,count) {
-    return positionNotFullCheck(position, count, 2,6,5,3);
+    return isBelow(position, count, 2,6,5,3);
 };
 
 exports.isValidPlayingTeam = function(count) {
-    console.log("-----------Is Valid Playing Team ------------");
-    console.log(count);
-    console.log(positionCheck("keeper",count, 1,4,3,1));
-    console.log(positionCheck("defender",count, 1,4,3,1));
-    console.log(positionCheck("midfielder",count, 1,4,3,1));
-    console.log(positionCheck("forward",count, 1,4,3,1));
-    console.log(getNumberOfPlayers(count));
-    console.log("-----------END OF Valid Playing Team ------------");
+    if(count["keepers"] != 1) {return false;}
+    if(!isBetween(count["defenders"],4,5)) {return false;}
+    if(!isBetween(count["midfielders"],3,5)) {return false;}
+    if(!isBetween(count["forwards"],1,3)) {return false;}
+    if(getNumberOfPlayers(count) != 11) {return false;}
+    return true;
+};
 
-    if(positionCheck("keeper",count, 1,4,3,1) &&
-        positionCheck("defender",count, 1,4,3,1) &&
-        positionCheck("midfielder",count, 1,4,3,1) &&
-        positionCheck("forward",count, 1,4,3,1) &&
-        getNumberOfPlayers(count) == 11) {
+function isBetween(value, min,max) {
+    if (value >= min && value <= max) {
         return true;
     }
     else {
         return false;
     }
+}
+
+/*
+    Denne metoden er ikke helt safe, hvis playerIDen ikke eksisterer vil den fortsatt returnere true,
+    //TODO: Vurder en sjekk om iden fins.
+ */
+exports.checkIfPlayerIsAvailableInTheLeague = function(leagueID,playerID,gameweekNumber,callback,acceptCallback) {
+    var sql = "SELECT * FROM playerInformation " +
+        "WHERE gameWeekNumber="+aux.connection.escape(gameweekNumber)+
+        " AND leagueID="+aux.connection.escape(leagueID)+
+        " AND playerID="+aux.connection.escape(playerID);
+    aux.connection.query(sql, function(err, rows) {
+        if(err)
+        {
+            aux.onError(err, callback);
+        }
+        else if(rows === undefined || rows.length != 0) {
+             callback(500, "Internal server error");
+        }
+        else
+        {
+            acceptCallback();
+        }
+    });
 };
 
 function getNumberOfPlayers(count) {
     return  count["keepers"] + count["defenders"]+count["midfielders"] + count["forwards"];
 }
 
-function positionCheck(position,count, keeperLimit, defenderLimit, midfieldLimit, ForwardLimit){
+function isBelow(position,count, keeperLimit, defenderLimit, midfieldLimit, ForwardLimit){
     if(position == "keeper") {
-        if(count["keepers"] == keeperLimit) {return true;}
+        if(count["keepers"] < keeperLimit) {return true;}
         else{return false;}
     }
-    else if(position == "defender") {
-        if(count["defenders"] >= defenderLimit) {return true;}
+    if(position == "defender") {
+        if(count["defenders"] < defenderLimit) {return true;}
         else{return false;}
     }
-    else if(position == "midfielder") {
-        if(count["midfielders"] >= midfieldLimit) {return true;}
+    if(position == "midfielder") {
+        if(count["midfielders"] < midfieldLimit) {return true;}
         else{return false;}
     }
-    else {
-        if(count["forwards"] >= ForwardLimit) {return true;}
+    if(position == "forward") {
+        if(count["forwards"] < ForwardLimit) {return true;}
         else{return false;}
     }
-};
-
-function positionNotFullCheck(position,count, keeperLimit, defenderLimit, midfieldLimit, ForwardLimit){
-    if(position == "keeper") {
-        if(count["keepers"] <= keeperLimit) {return true;}
-        else{return false;}
-    }
-    else if(position == "defender") {
-        if(count["defenders"] <= defenderLimit) {return true;}
-        else{return false;}
-    }
-    else if(position == "midfielder") {
-        if(count["midfielders"] <= midfieldLimit) {return true;}
-        else{return false;}
-    }
-    else {
-        if(count["forwards"] <= ForwardLimit) {return true;}
-        else{return false;}
+    else{
+        return false;
     }
 };
 
@@ -181,9 +186,12 @@ exports.getuserTeamIDAndLeagueID = function(username,callback, acceptCallback) {
         "AND leagueID IS NOT NULL";
 
     aux.connection.query(sql, function(err, rows) {
-        if(err ||rows === undefined || rows.length != 1)
+        if(err)
         {
             aux.onError(err, callback);
+        }
+        else if(rows == undefined || rows.length != 1) {
+            callback(500, "Internal server error");
         }
         else
         {
@@ -195,13 +203,16 @@ exports.getuserTeamIDAndLeagueID = function(username,callback, acceptCallback) {
 exports.getLeagueIDFromUsername = function(username,callback, acceptCallback) {
     var sql = "SELECT leagueID FROM teamsLeagueInformation WHERE username="+aux.connection.escape(username);
     aux.connection.query(sql, function(err, rows) {
-        if(err || rows === undefined || rows.length != 1)
+        if(err)
         {
             aux.onError(err, callback);
+        }
+        else if(rows == undefined || rows.length != 1) {
+            callback(500, "Internal server error");
         }
         else
         {
             acceptCallback(rows[0]["leagueID"]);
         }
     });
-}
+};
