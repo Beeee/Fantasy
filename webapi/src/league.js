@@ -15,7 +15,7 @@ var addTeam = function(params,callback) {
             else
             {
                 validateUserAddTeam(params["username"], callback, function(userTeamID) {
-                    adminCheck(auth["username"],callback, function(leagueID) {
+                    teamHelpers.adminCheck(auth["username"],callback, function(leagueID) {
                         insertTeamInLeagueSQL(leagueID, userTeamID, callback);
                     });
                 });
@@ -42,23 +42,6 @@ function validateUserAddTeam(username,callback,acceptedCallback){
         }
         else {
             acceptedCallback(rows[0]["userTeamID"]);
-        }
-    });
-};
-
-function adminCheck(adminUsername,callback, acceptCallback) {
-    var sql =  "SELECT leagueID FROM adminsView WHERE username="+aux.connection.escape(adminUsername);
-    aux.connection.query(sql, function(err, rows) {
-        if(err)
-        {
-            aux.onError(err, callback);
-        }
-        else if(rows === undefined || rows.length != 1)
-        {
-            callback(403, "THE USER IS NOT AN ADMIN");
-        }
-        else {
-            acceptCallback(rows[0]["leagueID"]);
         }
     });
 };

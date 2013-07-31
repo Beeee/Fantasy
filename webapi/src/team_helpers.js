@@ -103,7 +103,7 @@ function isBetween(value, min,max) {
 
 /*
     Denne metoden er ikke helt safe, hvis playerIDen ikke eksisterer vil den fortsatt returnere true,
-    //TODO: Vurder en sjekk om iden fins.
+    //TODO: Vurder en sjekk om iden fins. Og endre returnkode dersom spilleren finnes
  */
 exports.checkIfPlayerIsAvailableInTheLeague = function(leagueID,playerID,gameweekNumber,callback,acceptCallback) {
     var sql = "SELECT * FROM playerInformation " +
@@ -116,7 +116,7 @@ exports.checkIfPlayerIsAvailableInTheLeague = function(leagueID,playerID,gamewee
             aux.onError(err, callback);
         }
         else if(rows === undefined || rows.length != 0) {
-             callback(500, "Internal server error");
+             callback(500, "Player is not available");
         }
         else
         {
@@ -212,6 +212,23 @@ exports.getLeagueIDFromUsername = function(username,callback, acceptCallback) {
         }
         else
         {
+            acceptCallback(rows[0]["leagueID"]);
+        }
+    });
+};
+
+exports.adminCheck =  function (adminUsername,callback, acceptCallback) {
+    var sql =  "SELECT leagueID FROM adminsView WHERE username="+aux.connection.escape(adminUsername);
+    aux.connection.query(sql, function(err, rows) {
+        if(err)
+        {
+            aux.onError(err, callback);
+        }
+        else if(rows === undefined || rows.length != 1)
+        {
+            callback(403, "THE USER IS NOT AN ADMIN");
+        }
+        else {
             acceptCallback(rows[0]["leagueID"]);
         }
     });

@@ -1,18 +1,29 @@
 var aux = require("./auxiliar");
 
-var getUsers = function(params,callback) {
-    aux.connection.query('SELECT username, mail FROM User', function(err, rows) {
-      var result = [];
-        for (var i in rows) {
-            result[i] = {
-                username: rows[i]["username"],
-                email: rows[i]["mail"]
-            };
+var getUserInformation = function(params,callback) {
+
+    if(params["username"] === undefined) {
+        return callback(400, "Bad Request");
+    }
+
+    var sql = "SELECT username, UserTeam.name AS teamName, UserLeague.name AS leagueName " +
+        "FROM User, UserTeam LEFT JOIN UserLeague ON UserTeam.leagueID=UserLeague.leagueID " +
+        "WHERE User.userTeamID=UserTeam.userTeamID " +
+        "AND User.username="+aux.connection.escape(params["username"]);
+    aux.connection.query(sql, function(err, rows) {
+        if(err) {
+            aux.onError(err,callback);
         }
-        return callback(200, "OK", {}, result);
+        else if(rows.length != 1 || rows === undefined) {
+            callback(500,"internal server error");
+        }
+            else {
+            callback(200, "OK", {}, rows[0]);
+        }
+
     });
 };
 
 exports.dispatch = {
-    GET:    getUsers
+    GET:    getUserInformation
 };

@@ -1,5 +1,6 @@
 // A MySQL connection for all services
-var mysql      = require('mysql');
+var mysql = require('mysql');
+var constants = require('./constants');
 
 /*
 exports.connection = mysql.createConnection({
@@ -17,6 +18,7 @@ exports.connection = mysql.createConnection({
     password: '123',
     database: 'mydb'
 });
+
 
 exports.authenticate = function (params) {
     var header = params['authorization']||'',
@@ -38,6 +40,22 @@ exports.authenticate = function (params) {
 exports.loginFromParams = function (params, allowCallback, deniedCallback) {
     var auth = this.authenticate(params);
     return this.loginWithUserPw(auth["username"],auth["password"], allowCallback, deniedCallback);
+};
+
+exports.setGameWeekConstant = function() {
+    var sql = "SELECT * FROM GameWeek";
+    this.connection.query(sql, function(err, rows){
+        if(err || rows === undefined || rows.length != 1) {
+            console.log("CRITICAL ERROR: COULD NOT GET GAMEWEEKNR");
+            if(err) {
+                console.log(err);
+            }
+        }
+        else {
+            constants.GAMEWEEKNUMBER = rows[0]["gameWeekGlobal"];
+        }
+    })
+
 };
 
 exports.loginWithUserPw = function (username,password, allowCallback, deniedCallback) {

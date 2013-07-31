@@ -1,6 +1,7 @@
 var aux = require("./auxiliar");
 var teamHelpers = require("./team_helpers");
 var createteam = require("./userteam/create_team")
+var constants = require("./constants");
 
 var getTeam = function(params,callback) {
     if(params["gameweek"] === undefined || params["username"] === undefined)
@@ -111,6 +112,7 @@ function setUpTeam(team) {
 
     var sql = "UPDATE GameweekTeam_has_Player SET substitute=1 " +
         "WHERE userTeamID=" +aux.connection.escape(userTeamID)+
+        " AND gameWeekNumber="+constants.GAMEWEEKNUMBER +
         " AND (playerID="+aux.connection.escape(playerIDlist[0]) +
         " OR playerID="+aux.connection.escape(playerIDlist[1]) +
         " OR playerID="+aux.connection.escape(playerIDlist[2]) +

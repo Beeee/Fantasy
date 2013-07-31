@@ -60,15 +60,12 @@ function translate(position) {
 
 
 function updateSubstituteSQL(userTeamID, gameWeekNumber,playerID,value,callback,acceptCallback) {
-
     var sql = "UPDATE GameweekTeam_has_Player SET substitute="+aux.connection.escape(value)+
         " WHERE userTeamID="+ aux.connection.escape(userTeamID)+ " AND gameWeekNumber="+gameWeekNumber
     +" AND playerID="+aux.connection.escape(playerID);
-    console.log(sql);
     aux.connection.query(sql, function(err) {
         if(err)
         {
-            console.log(err);
             aux.onError(err, callback);
         }
         else

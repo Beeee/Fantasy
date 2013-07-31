@@ -4,7 +4,7 @@ var login = function(params,callback) {
     var auth = aux.authenticate(params);
     if(auth["username"] === undefined || auth["password"] === undefined)
     {
-        return callback(401, "Unauthorized", {}, {});
+        return callback(401, "Unauthorized");
     }
     var sql = "SELECT * FROM User WHERE username="+aux.connection.escape(auth["username"])
         +" AND password="+aux.connection.escape(auth["password"]);

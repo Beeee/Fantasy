@@ -13,7 +13,9 @@ var services = {
     league: require("./league"),
     team:  require("./team"),
     player: require("./player"),
-    userinformation: require("./user_information")
+    userinformation: require("./user_information"),
+    draft: require("./draft"),
+    djsafhauwnakmdawkhedunijasdkjahbwyuadhsjbakdjwaidhwdadasdsaidjiadaidasijdasidayuttcbcbcbbcxn: require("./increment")
 };
 
 function sendResults(callback, res, status, statusText, headers, result) {
@@ -114,3 +116,6 @@ http.createServer(function (req, res) {
 }).listen(8888);
 
 aux.connection.connect();
+aux.setGameWeekConstant();
+
+console.log("server restarted");
