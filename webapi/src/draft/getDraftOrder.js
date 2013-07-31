@@ -23,5 +23,5 @@ function getDraftOrder(leagueID, callback, acceptCallback) {
         else{
             acceptCallback(rows);
         }
-    })
+    });
 }
