@@ -115,7 +115,7 @@ http.createServer(function (req, res) {
   }
 }).listen(8888);
 
-aux.connection.connect();
+//aux.connection.connect();
 aux.setGameWeekConstant();
 
 console.log("server restarted");

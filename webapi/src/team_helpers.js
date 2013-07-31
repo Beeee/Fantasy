@@ -218,7 +218,7 @@ exports.getLeagueIDFromUsername = function(username,callback, acceptCallback) {
 };
 
 exports.adminCheck =  function (adminUsername,callback, acceptCallback) {
-    var sql =  "SELECT leagueID FROM adminsView WHERE username="+aux.connection.escape(adminUsername);
+    var sql =  "SELECT leagueID FROM UserLeague WHERE admin="+aux.connection.escape(adminUsername);
     aux.connection.query(sql, function(err, rows) {
         if(err)
         {
@@ -230,6 +230,30 @@ exports.adminCheck =  function (adminUsername,callback, acceptCallback) {
         }
         else {
             acceptCallback(rows[0]["leagueID"]);
+        }
+    });
+};
+
+
+exports.isLeagueLocked = function(leagueID,callback, blockedCallback ,openCallback) {
+    var sql = "SELECT final FROM UserLeague WHERE leagueID="+aux.connection.escape(leagueID);
+    aux.connection.query(sql, function(err, rows) {
+        if(err)
+        {
+            aux.onError(err, callback);
+        }
+        else if(rows === undefined || rows.length != 1)
+        {
+            callback(500, "LEAGUEID DOES NOT EXIST");
+        }
+        else {
+            var final = rows[0]["final"];
+            if(final == "0") {
+                openCallback();
+            }
+            else{
+                blockedCallback();
+            }
         }
     });
 };

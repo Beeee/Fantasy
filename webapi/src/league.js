@@ -1,8 +1,33 @@
 var aux = require("./auxiliar");
 var teamHelpers = require("./team_helpers");
+var score = require("./score/score");
+var constants = require("./constants");
 
 var getLeagueInformation = function(params,callback) {
-    return callback(200, "NOT IMPLEMENTED");
+    var username = "";
+    if(params['authorization'] !== undefined) {
+        var auth = aux.authenticate(params);
+        username = auth["username"];
+    }
+    else if(params["username"] !== undefined) {
+        username = params["username"];
+    }
+    else{
+        return callback(400, "Bad Request");
+    }
+    teamHelpers.getLeagueIDFromUsername(username, callback, function(leagueID) {
+        if(params["onlyGameweekScore"] == "1") {
+           if(params["gameweekNumber"] !== undefined) {
+                score.getGameweekLeagueScore(leagueID,params["gameweekNumber"],callback);
+           }
+           else{
+                score.getGameweekLeagueScore(leagueID, constants.GAMEWEEKNUMBER-1, callback);
+           }
+        }
+        else{
+            score.getOverallLeagueScore(leagueID,callback);
+        }
+    });
 };
 
 var addTeam = function(params,callback) {
@@ -16,7 +41,11 @@ var addTeam = function(params,callback) {
             {
                 validateUserAddTeam(params["username"], callback, function(userTeamID) {
                     teamHelpers.adminCheck(auth["username"],callback, function(leagueID) {
-                        insertTeamInLeagueSQL(leagueID, userTeamID, callback);
+                        teamHelpers.isLeagueLocked(leagueID,callback,function(){
+                            callback(400, "League is no longer open");
+                        }, function() {
+                            insertTeamInLeagueSQL(leagueID, userTeamID, callback);
+                        });
                     });
                 });
             }
@@ -70,7 +99,31 @@ var createLeague = function(params,callback) {
         }
         else
         {
-            validateUser(auth["username"], params["name"], callback);
+                validateUser(auth["username"], callback, function() {
+                    var data = {
+                        "name": auth["username"],
+                        "admin": params["name"],
+                        "final": 0,
+                        "draftIsActive": 0
+                    }
+                    if(params["draftDate"] !== undefined) {
+                        data["draftDate"] = new Date(params["draftDate"]);
+                    }
+                    createNewLeagueSQL(data, function(err){
+                        handleCreateLeagueSQLError(err,callback);
+                    }, function(){
+                        teamHelpers.adminCheck(auth["username"], callback, function(leagueID) {
+                            teamHelpers.getUserTeamIDFromUsername(auth["username"],callback, function(userTeamID) {
+                                bindTeamAndLeagueSQL(leagueID,userTeamID,function(err){
+                                    deleteLeague(leagueID,callback);
+                                    aux.onError(err, callback);
+                                } ,function() {
+                                    callback(202, "Accepted");
+                                });
+                            });
+                        });
+                    } );
+                });
         }
     },
         function() {
@@ -78,7 +131,7 @@ var createLeague = function(params,callback) {
     });
 };
 
-function validateUser(username,name,callback) {
+function validateUser(username,callback, acceptCallback) {
     var sql = "SELECT * " +
         "FROM User, UserTeam " +
         "WHERE User.userTeamID=UserTeam.userTeamID AND leagueID IS NULL AND User.username="+aux.connection.escape(username);
@@ -92,23 +145,19 @@ function validateUser(username,name,callback) {
             callback(403, "THE TEAM ALREADY HAS A LEAGUE");
         }
         else {
-            createNewLeagueSQL(username, name, callback);
+            acceptCallback();
         }
     });
 };
 
-function createNewLeagueSQL(username, name, callback) {
+function createNewLeagueSQL(data, errorCallback, acceptCallback) {
     var sql = "INSERT INTO UserLeague SET ?";
-    var data = {
-        "name": name,
-        "admin": username
-    }
     aux.connection.query(sql, data, function(err) {
         if(err) {
-            handleCreateLeagueSQLError(err,callback);
+            errorCallback(err);
         }
         else {
-            getUserLeagueID(username,callback);
+            acceptCallback();
          }
     });
 };
@@ -123,37 +172,16 @@ function handleCreateLeagueSQLError(err,callback){
     }
 };
 
-function getUserLeagueID(username,callback) {
-    var sql = "SELECT leagueID FROM UserLeague WHERE admin="+aux.connection.escape(username);
-    aux.connection.query(sql, function(err, rows) {
-        if(err)
-        {
-            aux.onError(err, callback);
-        }
-        else if(rows === undefined || rows.length != 1)
-        {
-            callback(500, "UNEXPECTED INTERNAL ERROR");
-        }
-        else
-        {
-            teamHelpers.getUserTeamIDFromUsername(username,callback, function(userTeamID) {
-                bindTeamAndLeagueSQL(rows[0]["leagueID"],userTeamID,callback);
-            });
-        }
-    });
-};
-
-function bindTeamAndLeagueSQL(leagueID,userTeamID,callback) {
+function bindTeamAndLeagueSQL(leagueID,userTeamID, errorCallback ,acceptCallback) {
     var sql = "UPDATE UserTeam SET leagueID="+aux.connection.escape(leagueID)+" WHERE userTeamID="+aux.connection.escape(userTeamID);
-    aux.connection.query(sql, function(err, rows) {
+    aux.connection.query(sql, function(err) {
         if(err)
         {
-            deleteLeague(leagueID,callback);
-            aux.onError(err, callback);
+            errorCallback(err);
         }
         else
         {
-            callback(202, "Accepted");
+            acceptCallback();
         }
     });
 

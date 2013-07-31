@@ -1,6 +1,6 @@
 var aux = require("./../auxiliar");
 var teamHelpers = require("./../team_helpers");
-var subHelpers = require("./substitution_helpers");
+var constants = require("./../constants")
 
 exports.main = function(params, callback) {
     var auth = aux.authenticate(params);
@@ -9,7 +9,7 @@ exports.main = function(params, callback) {
     if(subIn == subOut) {
         return callback(403, "INVALID SUBSTITUTION");
     }
-    var gameweekNumber = 1;
+    var gameweekNumber = constants.GAMEWEEKNUMBER;
     aux.loginWithUserPw(auth["username"],auth["password"],function() {
         teamHelpers.getUserTeamIDFromUsername(auth["username"],callback,function(userTeamID) {
             teamHelpers.getTeam(userTeamID,gameweekNumber,callback,function(team) {

@@ -4,12 +4,17 @@ var createteam = require("./userteam/create_team")
 var constants = require("./constants");
 
 var getTeam = function(params,callback) {
-    if(params["gameweek"] === undefined || params["username"] === undefined)
+    if(params["username"] === undefined)
     {
         return callback(400, "Bad Request");
     }
+    var gameweek = constants.GAMEWEEKNUMBER;
+    if(params["gameweek"] === undefined){
+        gameweek = params["gameweek"];
+    }
+
     var sql = "SELECT playerID, playerName, position, substitute  FROM teamsView WHERE "
-        +"gameweekNumber="+aux.connection.escape(params["gameweek"])
+        +"gameweekNumber="+aux.connection.escape(gameweek)
         +" AND username="+aux.connection.escape(params["username"]);
     return aux.connection.query(sql, function(err, rows) {
         if(err) { return aux.onError(err, callback);  }
@@ -31,14 +36,14 @@ var deleteTeam = function(params,callback) {
 
 var pickPlayerFromPool = function(params,callback) {
     var auth = aux.authenticate(params);
-    var gameWeekNumber = 1;
+    var gameWeekNumber = constants.GAMEWEEKNUMBER;
     aux.loginWithUserPw(auth["username"],auth["password"],
         function() {
             teamHelpers.getuserTeamIDAndLeagueID(auth["username"], callback, function(userTeamID,leagueID) {
-                teamHelpers.checkIfPlayerIsAvailableInTheLeague(leagueID,params["playerid"],"1",callback, function() {
-                    teamHelpers.getTeam(userTeamID,"1",callback,function(team){
+                teamHelpers.checkIfPlayerIsAvailableInTheLeague(leagueID,params["playerid"],gameWeekNumber,callback, function() {
+                    teamHelpers.getTeam(userTeamID,gameWeekNumber,callback,function(team){
                         checkPlayerAvail(team, params["playerid"],callback,function() {
-                            insertPlayer(userTeamID,params["playerid"],"1",callback, function() {
+                            insertPlayer(userTeamID,params["playerid"],gameWeekNumber,callback, function() {
                                 teamHelpers.getTeam(userTeamID,gameWeekNumber,callback, function (newTeam) {
                                     if(newTeam.length == 16) {
 

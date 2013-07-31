@@ -1,23 +1,29 @@
-/**
- * Created with JetBrains WebStorm.
- * User: Roar
- * Date: 30.07.13
- * Time: 19:14
- * To change this template use File | Settings | File Templates.
- */
+var draft = require("./draft/createDraftOrder")
+var startDraft = require("./draft/startdrafting")
+var getDraftOrderImport = require("./draft/getDraftOrder")
 
 var getDraftOrder = function(params,callback) {
-    var allowHeader = {"Allow": "GET, PUT, POST"};
-    return callback(405, "Method Not Allowed",allowHeader);
+    var username = "";
+    if(params['authorization'] !== undefined) {
+        var auth = aux.authenticate(params);
+        username = auth["username"];
+    }
+    else if(params["username"] !== undefined) {
+        username = params["username"];
+    }
+    else{
+        return callback(400, "Bad Request");
+    }
+    return getDraftOrderImport.main(username,callback);
 };
-var makeSubstitution = function(params,callback) {
-    var allowHeader = {"Allow": "GET, PUT, POST"};
-    return callback(405, "Method Not Allowed",allowHeader);
+
+var startDrafting = function(params,callback) {
+    return startDraft.main(params,callback);
 };
 var createDraftOrder = function(params,callback) {
-
-    var allowHeader = {"Allow": "GET, PUT, POST"};
-    return callback(405, "Method Not Allowed",allowHeader);
+    return draft.main(params,callback, function(){
+        callback(202, "Accepted");
+    });
 };
 
 
@@ -28,7 +34,7 @@ var deleteTeam = function(params,callback) {
 
 exports.dispatch = {
     GET:    getDraftOrder,
-    PUT:    makeSubstitution,
+    PUT:    startDrafting,
     POST:   createDraftOrder,
     DELETE: deleteTeam
 };
