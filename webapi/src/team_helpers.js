@@ -257,3 +257,53 @@ exports.isLeagueLocked = function(leagueID,callback, blockedCallback ,openCallba
         }
     });
 };
+
+exports.loginGetUserNameANDuserTeamIDAnduserLeagueIDWithOutCallback = function(params, callback, acceptCallback) {
+    return loginGetuserTeamIDAnduserLeagueIDWithCallback(params,callback, function() {
+        return aux.unauthorized(callback);
+    }, function(username,userTeamID,leagueID) {
+        return acceptCallback(username,userTeamID,leagueID);
+    })
+};
+
+
+exports.loginGetUserNameANDuserTeamIDAnduserLeagueIDWithCallback = function(params, callback, deniedcallback, acceptCallback) {
+    var auth = aux.authenticate(params);
+    aux.loginWithUserPw(auth["username"], auth["password"], function() {
+           this.getuserTeamIDAndLeagueID(auth["username"],callback,function(userTeamID, leagueID) {
+             acceptCallback(auth["username"],userTeamID,leagueID);
+           })
+    }, function() {
+        deniedcallback();
+    });
+};
+
+exports.hasPlayers = function (players, username ,callback, hasCallback, hasNotCallback) {
+    //Denne funksjonen er ikke testa
+    if(players.length == 0) {
+        return callback(400, "Bad request");
+    }
+    var sql = "SELECT count(*) as count FROM teamsView WHERE userTeamID="+aux.connection.escape(username)
+        +" AND (playerID="+aux.connection.escape(players[0])
+    for(var i = 1; i<players.length; i++) {
+        sql+= " OR playerID="+aux.connection.escape(players[i])
+    }
+    sql += ")"
+
+    aux.connection.query(sql, function(err,rows) {
+        if(err) {
+            return aux.onError(err,callback);
+        }
+        else if(rows.length != 1) {
+            callback(500, "internal server error");
+        }
+        else {
+            if(rows[0]["count"] == players.length) {
+                hasCallback();
+            }
+            else {
+                hasNotCallback();
+            }
+        }
+    })
+}

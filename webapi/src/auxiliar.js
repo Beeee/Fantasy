@@ -12,12 +12,33 @@ exports.connection = mysql.createConnection({
 */
 
 
-exports.connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'node',
-    password: '123',
-    database: 'mydb'
-});
+exports.connection;
+
+exports.createConnection = function() {
+    var db_config = {
+        host: 'localhost',
+        user: 'node',
+        password: '123',
+        database: 'mydb'
+    }
+    this.connection = mysql.createConnection(db_config);
+
+    this.connection.connect(function(err) {
+        if(err) {
+            console.log('error when connecting to db:', err);
+            setTimeout(this.createConnection, 2000);
+        }
+    });
+
+    this.connection.on('error', function(err) {
+        console.log('db error', err);
+        if(err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
+            this.createConnection();                         // lost due to either server restart, or a
+        } else {                                      // connnection idle timeout (the wait_timeout
+            throw err;                                 // server variable configures this)
+        }
+    });
+}
 
 
 exports.authenticate = function (params) {

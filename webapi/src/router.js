@@ -6,6 +6,10 @@ var fs = require('fs');
 //var logger = require('./log');
 
 
+aux.createConnection();
+aux.setGameWeekConstant();
+
+
 var services = {
     user:  require("./user_service"),
     userteam: require("./user_team"),
@@ -14,7 +18,10 @@ var services = {
     team:  require("./team"),
     player: require("./player"),
     userinformation: require("./user_information"),
+    watchlist: require("./watchlist"),
+    swap: require("./swap_players"),
     draft: require("./draft"),
+    drafttransfer: require("./drafttransfers"),
     djsafhauwnakmdawkhedunijasdkjahbwyuadhsjbakdjwaidhwdadasdsaidjiadaidasijdasidayuttcbcbcbbcxn: require("./increment")
 };
 
@@ -115,7 +122,14 @@ http.createServer(function (req, res) {
   }
 }).listen(8888);
 
-//aux.connection.connect();
-aux.setGameWeekConstant();
-
 console.log("server restarted");
+/*
+var io = require('socket.io').listen(3000);
+io.sockets.on('connection', function (socket) {
+    socket.emit('news', { hello: 'world' });
+    socket.on('my other event', function (data) {
+        console.log(data);
+    });
+});
+*/
+

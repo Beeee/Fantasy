@@ -26,7 +26,6 @@ var createDraftOrder = function(params,callback) {
     });
 };
 
-
 var deleteTeam = function(params,callback) {
     var allowHeader = {"Allow": "GET, PUT, POST"};
     return callback(405, "Method Not Allowed",allowHeader);
