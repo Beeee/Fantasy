@@ -6,7 +6,7 @@ var fs = require('fs');
 //var logger = require('./log');
 
 
-aux.createConnection();
+aux.setUpConnection();
 aux.setGameWeekConstant();
 
 
