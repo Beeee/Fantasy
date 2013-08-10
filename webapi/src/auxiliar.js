@@ -17,7 +17,6 @@ exports.connection;
 exports.setUpConnection = function() {
 
     console.log("Inn i setUpConnection")
-    console.log(this);
     var db_config = {
         host: 'localhost',
         user: 'node',
