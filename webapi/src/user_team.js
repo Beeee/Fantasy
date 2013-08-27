@@ -38,21 +38,6 @@ var deleteTeam = function(params,callback) {
 var pickPlayerFromPool = function(params,callback) {
     var allowHeader = {"Allow": "GET, POST"};
     return callback(405, "Method no longer available, use draft related method",allowHeader);
-    /*
-    var auth = aux.authenticate(params);
-    var gameWeekNumber = constants.GAMEWEEKNUMBER;
-    aux.loginWithUserPw(auth["username"],auth["password"],
-        function() {
-            teamHelpers.getuserTeamIDAndLeagueID(auth["username"], callback, function(userTeamID,leagueID) {
-                playerPicker.pickPlayer(userTeamID,leagueID,gameWeekNumber,params["playerID"],callback,function(){
-                     callback(202, "ACCEPTED");
-                 });
-            });
-        },
-        function() {
-            aux.unauthorized(callback);
-        });
-        */
 };
 
 
