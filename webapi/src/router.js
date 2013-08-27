@@ -22,6 +22,7 @@ var services = {
     swap: require("./swap_players"),
     draft: require("./draft"),
     drafttransfer: require("./drafttransfers"),
+    gameweeks: require("./round"),
     djsafhauwnakmdawkhedunijasdkjahbwyuadhsjbakdjwaidhwdadasdsaidjiadaidasijdasidayuttcbcbcbbcxn: require("./increment")
 };
 
