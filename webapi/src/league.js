@@ -3,29 +3,29 @@ var teamHelpers = require("./team_helpers");
 var score = require("./score/score");
 var constants = require("./constants");
 
-var getLeagueInformation = function(params,callback) {
+var getLeagueInformation = function (params, callback) {
     var username = "";
-    if(params['authorization'] !== undefined) {
+    if (params['authorization'] !== undefined) {
         var auth = aux.authenticate(params);
         username = auth["username"];
     }
-    else if(params["username"] !== undefined) {
+    else if (params["username"] !== undefined) {
         username = params["username"];
     }
-    else{
+    else {
         return callback(400, "Bad Request");
     }
-    teamHelpers.getLeagueIDFromUsername(username, callback, function(leagueID) {
-        if(params["onlyGameweekScore"] == "1") {
-           if(params["gameweekNumber"] !== undefined) {
-                score.getGameweekLeagueScore(leagueID,params["gameweekNumber"],callback);
-           }
-           else{
-                score.getGameweekLeagueScore(leagueID, constants.GAMEWEEKNUMBER-1, callback);
-           }
+    teamHelpers.getLeagueIDFromUsername(username, callback, function (leagueID) {
+        if (params["onlyGameweekScore"] == "1") {
+            if (params["gameweekNumber"] !== undefined) {
+                score.getGameweekLeagueScore(leagueID, params["gameweekNumber"], callback);
+            }
+            else {
+                score.getGameweekLeagueScore(leagueID, constants.GAMEWEEKNUMBER - 1, callback);
+            }
         }
-        else{
-            score.getOverallLeagueScore(leagueID,callback);
+        else {
+            score.getOverallLeagueScore(leagueID, callback);
         }
     });
 };
