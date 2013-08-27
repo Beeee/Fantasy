@@ -1,8 +1,7 @@
 var aux = require("./auxiliar");
 
 getGameWeeksInformation = function(params,callback) {
-
-    "SELECT * FROM mydb.GameWeekRounds"
+    var sql = "SELECT * FROM mydb.GameWeekRounds"
     if(params["gameWeekNumber"] !== undefined)
     {
         sql = sql+" WHERE gameWeekNumber="+aux.connection.escape(params["gameWeekNumber"]);
