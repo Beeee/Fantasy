@@ -34,7 +34,7 @@ exports.getGameweekLeagueScore = function(leagueID,gameWeekNumber, callback) {
 function getGameWeekScoreSQL(leagueID,gameWeekNumber,callback, acceptCallback) {
     var sql ="SELECT * FROM mydb.userGameWeekScoresIncludeEmpty WHERE leagueID="+aux.connection.escape(leagueID)+" " +
         "AND gameWeekNumber="+aux.connection.escape(gameWeekNumber) +" " +
-        "ORDER BY gameWeekNumber DESC";
+        "ORDER BY Score DESC";
     console.log(sql);
     aux.connection.query(sql, function(err, rows) {
         if(err)

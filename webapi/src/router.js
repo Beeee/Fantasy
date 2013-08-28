@@ -23,6 +23,7 @@ var services = {
     draft: require("./draft"),
     drafttransfer: require("./drafttransfers"),
     gameweeks: require("./round"),
+    detaileduserscore: require("./userscore"),
     djsafhauwnakmdawkhedunijasdkjahbwyuadhsjbakdjwaidhwdadasdsaidjiadaidasijdasidayuttcbcbcbbcxn: require("./increment")
 };
 
