@@ -72,7 +72,7 @@ function routeCall(req, res, body) {
   {
 	params["authorization"] = req.headers["authorization"];
   }
-  console.log(params['authorization']);  
+//  console.log(params['authorization']);  
   var toCall = urlObj.pathname.split("/")[1];
   
   if (typeof services[toCall] === "undefined")
@@ -129,6 +129,7 @@ http.createServer(function (req, res) {
     }
 }).listen(8888);
 var io = require('socket.io').listen(3000);
+io.set('log level', 1); 
 console.log("server restarted");
 
 function sendResultsToSockets(ioInput) {
