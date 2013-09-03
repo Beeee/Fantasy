@@ -13,7 +13,10 @@ exports.main = function(params, callback) {
                }, function() {
                   createDraftOrder.main(params,callback, function() {
                       activateDraftingInTheDatabase(leagueID,callback, function(){
-                          callback(202,"Accepted");
+                          callback(202,"Accepted",{},{},{
+                              "operation": 0,
+                              "leagueID": leagueID   
+                          });
                       });
                   });
             });

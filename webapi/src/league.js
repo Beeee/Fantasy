@@ -2,7 +2,17 @@ var aux = require("./auxiliar");
 var teamHelpers = require("./team_helpers");
 var score = require("./score/score");
 var constants = require("./constants");
+//var _io = "";
 
+/*
+module.exports = function (io) {
+    _io = io;
+}
+
+function socketActivity(data) {
+    _io.sockets.emit("news", data);
+};
+*/
 var getLeagueInformation = function (params, callback) {
     var username = "";
     if (params['authorization'] !== undefined) {
@@ -15,6 +25,7 @@ var getLeagueInformation = function (params, callback) {
     else {
         return callback(400, "Bad Request");
     }
+  //  socketActivity(username);
     teamHelpers.getLeagueIDFromUsername(username, callback, function (leagueID) {
         if (params["onlyGameweekScore"] == "1") {
             if (params["gameweekNumber"] !== undefined) {

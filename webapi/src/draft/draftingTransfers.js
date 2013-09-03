@@ -14,53 +14,63 @@ var constants = require("./../constants");
 7.
  */
 
-exports.main = function(params,callback) {
-    if(params["playerid"] === undefined) {
+exports.main = function (params, callback) {
+    if (params["playerid"] === undefined) {
         return callback(400, "playerid undefined");
     }
     var auth = aux.authenticate(params);
 
-    aux.loginWithUserPw(auth["username"],auth["password"], function() {
-       teamHelpers.getuserTeamIDAndLeagueID(auth["username"],callback, function(userTeamID,leagueID) {
-           console.log(3)
-           hasDraftingStarted(leagueID,callback,function(){
-                   callback(400, "Drafting has not started");
-           }, function() {
-               isUsersTurn(leagueID, userTeamID,callback,function(){
+    aux.loginWithUserPw(auth["username"], auth["password"], function () {
+        teamHelpers.getuserTeamIDAndLeagueID(auth["username"], callback, function (userTeamID, leagueID) {
+            hasDraftingStarted(leagueID, callback, function () {
+                callback(400, "Drafting has not started");
+            }, function () {
+                isUsersTurn(leagueID, userTeamID, callback, function () {
                     callback(400, "It is not your turn to pick");
-               }, function(number) {
-                   playerPicker.pickPlayer(userTeamID,leagueID,constants.GAMEWEEKNUMBER ,params["playerid"],callback,function(){
-                       hasNext(leagueID,number,callback,function() {
-                           callback(202, "Accepted");
-                       }, function() {
-                           var counter = 0;
-                           updateActiveToOne(leagueID,number+1,function(){
-                               callback(500, "Contact system administrator");
-                           }, function() {
-                               counter++;
-                               if(counter == 2) {
-                                   callback(200, "Accepted");
-                               }
+                }, function (number) {
+                    playerPicker.pickPlayer(userTeamID, leagueID, constants.GAMEWEEKNUMBER, params["playerid"], callback, function () {
+                        hasNext(leagueID, number, callback, function () {
+                            callback(202, "Accepted",{},{},{
+                               "operation": 2,
+                               "leagueID": leagueID 
+                            });
+                        }, function () {
+                            var counter = 0;
+                            updateActiveToOne(leagueID, number + 1, function () {
+                                callback(500, "Contact system administrator");
+                            }, function () {
+                                counter++;
+                                if (counter == 2) {
+                                     generateCallback(callback, leagueID, params["playerid"], userTeamID);
+                                }
+                            });
+                            updateActiveToZero(leagueID, number, function (err) {
+                                aux.onError(err, callback);
+                            }, function () {
+                                counter++;
+                                if (counter == 2) {
+                                    generateCallback(callback, leagueID, params["playerid"], userTeamID);
+                                }
+                            })
+                        })
+                    })
 
-                           });
-                           updateActiveToZero(leagueID,number,function(err){
-                               aux.onError(err,callback);
-                           }, function(){
-                               counter++;
-                               if(counter == 2) {
-                                   callback(200, "Accepted");
-                               }
-                           })
-                       })
-                   })
-
-               })
-           })
-       })
-    }, function() {
+                })
+            })
+        })
+    }, function () {
         aux.unauthorized(callback);
     })
 }
+
+function generateCallback(callback, leagueID, playerID, userTeamID){
+   callback(200, "Accepted", {},{},{
+        "operation": 1,
+        "leagueID": leagueID,
+        "playerID": playerID,
+        "userTeamID": userTeamID    
+        }); 
+};
 
 function hasDraftingStarted(leagueID, callback, deniedCallback, acceptCallback) {
     var sql = "SELECT draftIsActive FROM UserLeague WHERE leagueID="+aux.connection.escape(leagueID);

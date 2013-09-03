@@ -9,7 +9,6 @@ var fs = require('fs');
 aux.setUpConnection();
 aux.setGameWeekConstant();
 
-
 var services = {
     user:  require("./user_service"),
     userteam: require("./user_team"),
@@ -72,7 +71,8 @@ function routeCall(req, res, body) {
   if(req.headers["authorization"] !== undefined)
   {
 	params["authorization"] = req.headers["authorization"];
-  }  
+  }
+  console.log(params['authorization']);  
   var toCall = urlObj.pathname.split("/")[1];
   
   if (typeof services[toCall] === "undefined")
@@ -87,9 +87,13 @@ function routeCall(req, res, body) {
     return sendResults(params["callback"],res, 404, "SERVICE NOT FOUND");
   }
 
-  services[toCall]["dispatch"][req.method](params, function(status, statusText, headers, result){
+  services[toCall]["dispatch"][req.method](params, function (status, statusText, headers, result, ioInput) {
+      if(ioInput !== undefined) {
+         sendResultsToSockets(ioInput); 
+      }
+      
       return sendResults(params["callback"], res, status, statusText, headers, result);
-    });
+  });
 }
 
 // Unexpected error catching
@@ -109,29 +113,55 @@ var options = {
 
 //https.createServer(options,function (req, res) {
 http.createServer(function (req, res) {
-  if (req.method==="POST" || req.method==="PUT") {
-    var body = "";
-    req.on("data", function(data){
-      body += data;
-    })
+    
+    if (req.method === "POST" || req.method === "PUT") {
+        var body = "";
+        req.on("data", function (data) {
+            body += data;
+        })
 
-    req.on("end", function(){
-      return routeCall(req, res, body);
-    })
+        req.on("end", function () {
+            return routeCall(req, res, body);
+        })
 
-  } else {
-    return routeCall(req, res);
-  }
+    } else {
+        return routeCall(req, res);
+    }
 }).listen(8888);
-
-console.log("server restarted");
-/*
 var io = require('socket.io').listen(3000);
+console.log("server restarted");
+
+function sendResultsToSockets(ioInput) {
+    if(ioInput["operation"] == 0) {
+        //drafting ended
+    }
+    if(ioInput["operation"] == 1) {
+        var result = {
+        "leagueID": ioInput["leagueID"],
+        "playerID": ioInput["playerID"],
+        "userTeamID": ioInput["userTeamID"]  
+        };
+        io.sockets.in(ioInput["leagueID"]).emit('news',JSON.stringify(result));
+    }
+    if(ioInput["operation"] == 2) {
+        //finished drafting
+    }
+};
+
+
 io.sockets.on('connection', function (socket) {
-    socket.emit('news', { hello: 'world' });
-    socket.on('my other event', function (data) {
-        console.log(data);
+    socket.on('join', function (leagueID) {
+        socket.join(leagueID["leagueID"]);
     });
 });
-*/
+
+io.sockets.on('disconnect', function (socket) {
+    //Adduser
+    //join/create Room
+    //    
+});
+
+
+//require("./league")(io);
+
 
