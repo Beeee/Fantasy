@@ -112,8 +112,8 @@ var createLeague = function(params,callback) {
         {
                 validateUser(auth["username"], callback, function() {
                     var data = {
-                        "name": auth["username"],
-                        "admin": params["name"],
+                        "name": params["name"],
+                        "admin": auth["username"],
                         "final": 0,
                         "draftIsActive": 0
                     }
